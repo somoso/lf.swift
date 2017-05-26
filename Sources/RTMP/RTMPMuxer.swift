@@ -10,6 +10,7 @@ protocol RTMPMuxerDelegate: class {
 // MARK: -
 final class RTMPMuxer {
     static let aac:UInt8 = FLVAudioCodec.aac.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
+    static let mp3:UInt8 = FLVAudioCodec.mp3.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
 
     weak var delegate:RTMPMuxerDelegate? = nil
     fileprivate var configs:[Int:Data] = [:]
@@ -29,7 +30,7 @@ extension RTMPMuxer: AudioEncoderDelegate {
         guard let formatDescription:CMFormatDescription = formatDescription else {
             return
         }
-        var buffer:Data = Data([RTMPMuxer.aac, FLVAACPacketType.seq.rawValue])
+        var buffer:Data = Data([RTMPMuxer.mp3, FLVAACPacketType.seq.rawValue])
         buffer.append(contentsOf: AudioSpecificConfig(formatDescription: formatDescription).bytes)
         delegate?.sampleOutput(audio: buffer, withTimestamp: 0, muxer: self)
     }
@@ -45,7 +46,7 @@ extension RTMPMuxer: AudioEncoderDelegate {
         guard let _:CMBlockBuffer = blockBuffer , 0 <= delta else {
             return
         }
-        var buffer:Data = Data([RTMPMuxer.aac, FLVAACPacketType.raw.rawValue])
+        var buffer:Data = Data([RTMPMuxer.mp3, FLVAACPacketType.raw.rawValue])
         if let mData:UnsafeMutableRawPointer = audioBufferList.mBuffers.mData {
             buffer.append(mData.assumingMemoryBound(to: UInt8.self), count: Int(audioBufferList.mBuffers.mDataByteSize))
         }
@@ -108,7 +109,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
             metadata["videocodecid"] = FLVVideoCodec.avc.rawValue
         }
         if let _:MP4AudioSampleEntryBox = reader.getBoxes(byName: "mp4a").first as? MP4AudioSampleEntryBox {
-            metadata["audiocodecid"] = FLVAudioCodec.aac.rawValue
+            metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
         }
         delegate?.metadata(metadata)
     }
@@ -127,7 +128,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
             if (withID != 1) {
                 break
             }
-            var buffer:Data = Data([RTMPMuxer.aac, FLVAACPacketType.seq.rawValue])
+            var buffer:Data = Data([RTMPMuxer.mp3])
             buffer.append(config)
             delegate?.sampleOutput(audio: buffer, withTimestamp: 0, muxer: self)
         default:
@@ -144,7 +145,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
             buffer.append(data)
             delegate?.sampleOutput(video: buffer, withTimestamp: currentTime, muxer: self)
         case 1:
-            var buffer:Data = Data([RTMPMuxer.aac, FLVAACPacketType.raw.rawValue])
+            var buffer:Data = Data([RTMPMuxer.mp3])
             buffer.append(data)
             delegate?.sampleOutput(audio: buffer, withTimestamp: currentTime, muxer: self)
         default:

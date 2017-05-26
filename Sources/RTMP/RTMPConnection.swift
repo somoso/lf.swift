@@ -384,7 +384,7 @@ open class RTMPConnection: EventDispatcher {
                 "tcUrl": uri.absoluteWithoutAuthenticationString,
                 "fpad": false,
                 "capabilities": RTMPConnection.defaultCapabilities,
-                "audioCodecs": Support.Sound.aac.rawValue,
+                "audioCodecs": Support.Sound.mp3.rawValue,
                 "videoCodecs": Support.Video.h264.rawValue,
                 "videoFunction": VideoFunction.clientSeek.rawValue,
                 "pageUrl": pageUrl,

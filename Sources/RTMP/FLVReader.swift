@@ -101,7 +101,7 @@ enum FLVAudioCodec:UInt8 {
         case .adpcm:
             return false
         case .mp3:
-            return false
+            return true
         case .pcmle:
             return false
         case .nellymoser16K:
