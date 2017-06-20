@@ -49,6 +49,11 @@ enum FLVAACPacketType:UInt8 {
     case raw = 1
 }
 
+enum FLVMP3PacketType:UInt8 {
+    case seq = 0
+    case raw = 1
+}
+
 enum FLVSoundRate:UInt8 {
     case kHz5_5 = 0
     case kHz11  = 1

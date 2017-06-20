@@ -597,8 +597,8 @@ final class RTMPAudioMessage: RTMPMessage {
         guard codec.isSupported else {
             return
         }
-        if let config:AudioSpecificConfig = createAudioSpecificConfig() {
-            stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP2Type
+        if let config:MP3AudioSpecificConfig = createAudioSpecificConfig() {
+            stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP3Type
             stream.mixer.audioIO.playback.config = config
             return
         }
@@ -606,17 +606,17 @@ final class RTMPAudioMessage: RTMPMessage {
         stream.mixer.audioIO.playback.parseBytes(soundData)
     }
 
-    func createAudioSpecificConfig() -> AudioSpecificConfig? {
+    func createAudioSpecificConfig() -> MP3AudioSpecificConfig? {
         if (payload.isEmpty) {
             return nil
         }
 
-        guard codec == FLVAudioCodec.aac else {
+        guard codec == FLVAudioCodec.mp3 else {
             return nil
         }
 
-        if (payload[1] == FLVAACPacketType.seq.rawValue) {
-            if let config:AudioSpecificConfig = AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
+        if (payload[1] == FLVMP3PacketType.seq.rawValue) {
+            if let config:MP3AudioSpecificConfig = MP3AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
                 return config
             }
         }

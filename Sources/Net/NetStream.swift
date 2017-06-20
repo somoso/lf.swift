@@ -61,7 +61,7 @@ open class NetStream: NSObject {
         get {
             var audioSettings:[String:Any]!
             lockQueue.sync {
-                audioSettings = self.mixer.audioIO.encoder.dictionaryWithValues(forKeys: AACEncoder.supportedSettingsKeys)
+                audioSettings = self.mixer.audioIO.encoder.dictionaryWithValues(forKeys: MP3Encoder.supportedSettingsKeys)
             }
             return  audioSettings
         }
