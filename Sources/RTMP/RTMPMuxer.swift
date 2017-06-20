@@ -24,13 +24,13 @@ final class RTMPMuxer {
     }
 }
 
-extension RTMPMuxer: AudioEncoderDelegate {
+extension RTMPMuxer: MP3AudioEncoderDelegate {
     // MARK: AudioEncoderDelegate
     func didSetFormatDescription(audio formatDescription: CMFormatDescription?) {
         guard let formatDescription:CMFormatDescription = formatDescription else {
             return
         }
-        var buffer:Data = Data([RTMPMuxer.mp3, FLVAACPacketType.seq.rawValue])
+        var buffer:Data = Data([RTMPMuxer.mp3])
         buffer.append(contentsOf: AudioSpecificConfig(formatDescription: formatDescription).bytes)
         delegate?.sampleOutput(audio: buffer, withTimestamp: 0, muxer: self)
     }
@@ -46,7 +46,7 @@ extension RTMPMuxer: AudioEncoderDelegate {
         guard let _:CMBlockBuffer = blockBuffer , 0 <= delta else {
             return
         }
-        var buffer:Data = Data([RTMPMuxer.mp3, FLVAACPacketType.raw.rawValue])
+        var buffer:Data = Data([RTMPMuxer.mp3])
         if let mData:UnsafeMutableRawPointer = audioBufferList.mBuffers.mData {
             buffer.append(mData.assumingMemoryBound(to: UInt8.self), count: Int(audioBufferList.mBuffers.mDataByteSize))
         }
@@ -109,6 +109,9 @@ extension RTMPMuxer: MP4SamplerDelegate {
             metadata["videocodecid"] = FLVVideoCodec.avc.rawValue
         }
         if let _:MP4AudioSampleEntryBox = reader.getBoxes(byName: "mp4a").first as? MP4AudioSampleEntryBox {
+            metadata["audiocodecid"] = FLVAudioCodec.aac.rawValue
+        }
+        if let _:MP3AudioSampleEntryBox = reader.getBoxes(byName: "mp3").first as? MP3AudioSampleEntryBox {
             metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
         }
         delegate?.metadata(metadata)

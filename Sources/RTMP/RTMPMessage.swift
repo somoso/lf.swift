@@ -598,7 +598,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return
         }
         if let config:AudioSpecificConfig = createAudioSpecificConfig() {
-            stream.mixer.audioIO.playback.fileTypeHint = kAudioFileAAC_ADTSType
+            stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP2Type
             stream.mixer.audioIO.playback.config = config
             return
         }
