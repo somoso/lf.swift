@@ -547,7 +547,7 @@ final class RTMPAudioMessage: RTMPMessage {
         guard let config:MP3AudioSpecificConfig = config else {
             return data
         }
-        return nil;
+        return data;
     }
 
     override var payload:Data {

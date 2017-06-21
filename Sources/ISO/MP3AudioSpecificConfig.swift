@@ -25,7 +25,7 @@ struct MP3AudioSpecificConfig {
     init?(bytes:[UInt8]) {
         print("Init MP3AudioSpecificConfig #")
         guard let
-            let frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] & 0b00000111) << 1 | (bytes[1] >> 7)),
+            frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] & 0b00000111) << 1 | (bytes[1] >> 7)),
             let channel:ChannelConfiguration = ChannelConfiguration(rawValue: (bytes[1] & 0b01111000) >> 3) else {
             return nil
         }
