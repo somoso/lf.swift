@@ -158,6 +158,7 @@ final class MP3Encoder: NSObject {
     }
 
     func encodeSampleBuffer(_ sampleBuffer:CMSampleBuffer) {
+        print("Encoding sample buffer - why are we encoding sample buffer?")
         guard let format:CMAudioFormatDescription = sampleBuffer.formatDescription, running else {
             return
         }
@@ -250,6 +251,7 @@ final class MP3Encoder: NSObject {
 extension MP3Encoder: Runnable {
     // MARK: Runnable
     func startRunning() {
+        print("We are running mp3 encoder. not sure why but okay.")
         lockQueue.async {
             self.running = true
         }
@@ -273,6 +275,7 @@ extension MP3Encoder: Runnable {
 extension MP3Encoder: AVCaptureAudioDataOutputSampleBufferDelegate {
     // MARK: AVCaptureAudioDataOutputSampleBufferDelegate
     func captureOutput(_ captureOutput:AVCaptureOutput!, didOutputSampleBuffer sampleBuffer:CMSampleBuffer!, from connection:AVCaptureConnection!) {
+        print("captureOutput called")
         encodeSampleBuffer(sampleBuffer)
     }
 }

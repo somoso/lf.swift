@@ -289,6 +289,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveAudio(flag:Bool) {
+        print("Receiving audio")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return
@@ -305,6 +306,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveVideo(flag:Bool) {
+        print("Receiving video")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return
@@ -321,6 +323,7 @@ open class RTMPStream: NetStream {
     }
 
     open func play(_ arguments:Any?...) {
+        print("Playing")
         lockQueue.async {
             guard let name:String = arguments.first as? String else {
                 switch self.readyState {
@@ -374,6 +377,7 @@ open class RTMPStream: NetStream {
     }
 
     open func publish(_ name:String?, type:RTMPStream.HowToPublish = .live) {
+        print("Why are we publishing to URL???")
         lockQueue.async {
             guard let name:String = name else {
                 switch self.readyState {
@@ -489,6 +493,7 @@ open class RTMPStream: NetStream {
     }
 
     open func pause() {
+        print("Pausing")
         lockQueue.async {
             self.paused = true
             switch self.readyState {
@@ -502,6 +507,7 @@ open class RTMPStream: NetStream {
     }
 
     open func resume() {
+        print("Resuming")
         lockQueue.async {
             self.paused = false
             switch self.readyState {
@@ -515,6 +521,7 @@ open class RTMPStream: NetStream {
     }
 
     open func togglePause() {
+        print("Toggle Pause")
         lockQueue.async {
             switch self.readyState {
             case .publish, .publishing:
@@ -566,6 +573,7 @@ open class RTMPStream: NetStream {
             metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
             metadata["audiodatarate"] = mixer.audioIO.encoder.bitrate
         }
+        print("metadata: \(metadata)")
 #endif
         return metadata
     }

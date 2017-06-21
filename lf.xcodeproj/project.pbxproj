@@ -333,8 +333,6 @@
 		68897AF49ABD1E11B0DB18C0 /* MP3AudioSpecificConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68897B0324C6033A1DD0D01E /* MP3AudioSpecificConfig.swift */; };
 		68897B90232322ECD526CCB9 /* MP3AudioSpecificConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68897B0324C6033A1DD0D01E /* MP3AudioSpecificConfig.swift */; };
 		68897D9C7F269C64D19917AD /* MP3Encoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688972141AFC68FE2067CB7D /* MP3Encoder.swift */; };
-		DD904A241ED83936002413CA /* MP3Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD904A221ED83936002413CA /* MP3Reader.swift */; };
-		DD904A251ED83936002413CA /* MP3Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD904A231ED83936002413CA /* MP3Sampler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -613,8 +611,6 @@
 		29FB94301E1BECCA005DE4DF /* SoundSpliter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SoundSpliter.swift; path = Sources/Media/SoundSpliter.swift; sourceTree = SOURCE_ROOT; };
 		688972141AFC68FE2067CB7D /* MP3Encoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MP3Encoder.swift; path = Sources/Codec/MP3Encoder.swift; sourceTree = SOURCE_ROOT; };
 		68897B0324C6033A1DD0D01E /* MP3AudioSpecificConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MP3AudioSpecificConfig.swift; path = Sources/ISO/MP3AudioSpecificConfig.swift; sourceTree = SOURCE_ROOT; };
-		DD904A221ED83936002413CA /* MP3Reader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MP3Reader.swift; path = Sources/ISO/MP3Reader.swift; sourceTree = SOURCE_ROOT; };
-		DD904A231ED83936002413CA /* MP3Sampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MP3Sampler.swift; path = Sources/ISO/MP3Sampler.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -870,8 +866,6 @@
 		295FEFA91C38236900271E90 /* ISO */ = {
 			isa = PBXGroup;
 			children = (
-				DD904A221ED83936002413CA /* MP3Reader.swift */,
-				DD904A231ED83936002413CA /* MP3Sampler.swift */,
 				29B8767D1CD70AE800FC07DA /* AudioSpecificConfig.swift */,
 				29B8767E1CD70AE800FC07DA /* H264+AVC.swift */,
 				29798E511CE5DF1900F5CBD0 /* MP4Reader.swift */,
@@ -1629,7 +1623,6 @@
 				2981B7F41D7345D5002FA821 /* SessionDescription.swift in Sources */,
 				2931204E1D4522E400B14211 /* RTSPResponse.swift in Sources */,
 				29B8765D1CD70A7900FC07DA /* H264Encoder.swift in Sources */,
-				DD904A241ED83936002413CA /* MP3Reader.swift in Sources */,
 				29B876B31CD70B2800FC07DA /* FLVReader.swift in Sources */,
 				29AF3FCF1D7C744C00E41212 /* NetStream.swift in Sources */,
 				29DD70E41D68CACA0021904A /* RTSPStream.swift in Sources */,
@@ -1683,7 +1676,6 @@
 				292D8A331D8B293300DBECE2 /* MP4Sampler.swift in Sources */,
 				29798E521CE5DF1A00F5CBD0 /* MP4Reader.swift in Sources */,
 				295747911E37AC1000EF056E /* RTMPStreamQoSDelagate.swift in Sources */,
-				DD904A251ED83936002413CA /* MP3Sampler.swift in Sources */,
 				29B876AC1CD70B2800FC07DA /* AMF3Serializer.swift in Sources */,
 				2916196C1E7F0768009FB344 /* CMFormatDescription+Extension.swift in Sources */,
 				29B876921CD70AFE00FC07DA /* AVMixer.swift in Sources */,

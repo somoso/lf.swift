@@ -108,10 +108,12 @@ extension RTMPMuxer: MP4SamplerDelegate {
             metadata["height"] = avc1.height
             metadata["videocodecid"] = FLVVideoCodec.avc.rawValue
         }
+        print("MP3 AudioCodecId \(reader.getBoxes(byName: "mp3").first)")
+        print("MP4a AudioCodecId \(reader.getBoxes(byName: "mp4a").first)")
         if let _:MP4AudioSampleEntryBox = reader.getBoxes(byName: "mp4a").first as? MP4AudioSampleEntryBox {
             metadata["audiocodecid"] = FLVAudioCodec.aac.rawValue
         }
-        if let _:MP3AudioSampleEntryBox = reader.getBoxes(byName: "mp3").first as? MP3AudioSampleEntryBox {
+        if let _:MP4AudioSampleEntryBox = reader.getBoxes(byName: "mp3").first as? MP4AudioSampleEntryBox {
             metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
         }
         delegate?.metadata(metadata)
@@ -122,6 +124,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
             return
         }
         configs[withID] = config
+        print("DidSet WithID: \(withID)")
         switch type {
         case AVMediaTypeVideo:
             var buffer:Data = Data([FLVFrameType.key.rawValue << 4 | FLVVideoCodec.avc.rawValue, FLVAVCPacketType.seq.rawValue, 0, 0, 0])
@@ -140,6 +143,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
     }
 
     func output(data:Data, withID:Int, currentTime:Double, keyframe:Bool) {
+        print("Output WithID: \(withID)")
         switch withID {
         case 0:
             let compositionTime:Int32 = 0
