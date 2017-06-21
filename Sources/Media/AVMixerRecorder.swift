@@ -19,7 +19,7 @@ open class AVMixerRecorder: NSObject {
 
     open static let defaultOutputSettings:[String:[String:Any]] = [
         AVMediaTypeAudio: [
-            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+            AVFormatIDKey: Int(kAudioFormatMPEGLayer3),
             AVSampleRateKey: 0,
             AVNumberOfChannelsKey: 0,
         ],

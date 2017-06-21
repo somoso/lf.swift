@@ -217,7 +217,7 @@ open class RTMPStream: NetStream {
     }
 
     static let defaultID:UInt32 = 0
-    open static let defaultAudioBitrate:UInt32 = AACEncoder.defaultBitrate
+    open static let defaultAudioBitrate:UInt32 = MP3Encoder.defaultBitrate
     open static let defaultVideoBitrate:UInt32 = H264Encoder.defaultBitrate
     open var qosDelagate:RTMPStreamQoSDelagate? = nil
     open internal(set) var info:RTMPStreamInfo = RTMPStreamInfo()

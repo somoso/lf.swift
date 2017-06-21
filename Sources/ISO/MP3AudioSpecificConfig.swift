@@ -9,7 +9,7 @@ import AVFoundation
   - http://wiki.multimedia.cx/?title=Understanding_AAC
  */
 struct MP3AudioSpecificConfig {
-    static let ADTSHeaderSize:Int = 7
+    static let ADTSHeaderSize:Int = 0
 
     var frequency:SamplingFrequency
     var channel:ChannelConfiguration
@@ -43,24 +43,10 @@ struct MP3AudioSpecificConfig {
         channel = ChannelConfiguration(rawValue: UInt8(asbd.mChannelsPerFrame))!
     }
 
-    func adts(_ length:Int) -> [UInt8] {
-        let size:Int = 7
-        let fullSize:Int = size + length
-        var adts:[UInt8] = [UInt8](repeating: 0x00, count: size)
-        adts[0] = 0xFF
-        adts[1] = 0xF9
-        adts[2] = (-1 << 6) | (frequency.rawValue << 2) | (channel.rawValue >> 2)
-        adts[3] = (channel.rawValue & 3) << 6 | UInt8(fullSize >> 11)
-        adts[4] = UInt8((fullSize & 0x7FF) >> 3)
-        adts[5] = ((UInt8(fullSize & 7)) << 5) + 0x1F
-        adts[6] = 0xFC
-        return adts
-    }
-
     func createAudioStreamBasicDescription() -> AudioStreamBasicDescription {
         var asbd:AudioStreamBasicDescription = AudioStreamBasicDescription()
         asbd.mSampleRate = frequency.sampleRate
-        asbd.mFormatID = kAudioFormatMPEG4AAC
+        asbd.mFormatID = kAudioFormatMPEGLayer3
         asbd.mFormatFlags = 0
         asbd.mBytesPerPacket = 0
         asbd.mFramesPerPacket = frameLengthFlag ? 960 : 1024
