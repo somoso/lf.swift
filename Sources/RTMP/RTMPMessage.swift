@@ -535,7 +535,7 @@ final class RTMPSharedObjectMessage: RTMPMessage {
  7.1.5. Audio Message (9)
  */
 final class RTMPAudioMessage: RTMPMessage {
-    var config:AudioSpecificConfig?
+    var config:MP3AudioSpecificConfig?
 
     private(set) var codec:FLVAudioCodec = .unknown
     private(set) var soundRate:FLVSoundRate = .kHz44
@@ -544,12 +544,10 @@ final class RTMPAudioMessage: RTMPMessage {
 
     var soundData:Data {
         let data:Data = payload.isEmpty ? Data() : payload.advanced(by: codec.headerSize)
-        guard let config:AudioSpecificConfig = config else {
+        guard let config:MP3AudioSpecificConfig = config else {
             return data
         }
-        var adts:Data = Data(config.adts(data.count))
-        adts.append(data)
-        return adts
+        return nil;
     }
 
     override var payload:Data {
