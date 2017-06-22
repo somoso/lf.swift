@@ -186,6 +186,7 @@ enum FLVTagType:UInt8 {
     }
 
     func message(with streamId: UInt32, timestamp: UInt32, buffer:Data) -> RTMPMessage {
+        logger.info("Buffer: \(buffer)")
         switch self {
         case .audio:
             return RTMPAudioMessage(streamId: streamId, timestamp: timestamp, payload: buffer)

@@ -537,17 +537,17 @@ final class RTMPSharedObjectMessage: RTMPMessage {
 final class RTMPAudioMessage: RTMPMessage {
     var config:MP3AudioSpecificConfig?
 
-    private(set) var codec:FLVAudioCodec = .unknown
+    private(set) var codec:FLVAudioCodec = .mp3
     private(set) var soundRate:FLVSoundRate = .kHz44
     private(set) var soundSize:FLVSoundSize = .snd8bit
     private(set) var soundType:FLVSoundType = .stereo
 
     var soundData:Data {
         let data:Data = payload.isEmpty ? Data() : payload.advanced(by: codec.headerSize)
-        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
         guard let config:MP3AudioSpecificConfig = config else {
             return data
         }
+        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
         return data;
     }
 
@@ -556,7 +556,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return super.payload
         }
         set {
-            logger.info("Payload: \(payload)")
+            logger.info("Payload: \(payload) \(newValue)")
             if (super.payload == newValue) {
                 return
             }
@@ -608,6 +608,7 @@ final class RTMPAudioMessage: RTMPMessage {
     }
 
     func createAudioSpecificConfig() -> MP3AudioSpecificConfig? {
+        logger.info("Payload: \(payload)\ncodec:\(codec)")
         if (payload.isEmpty) {
             return nil
         }
