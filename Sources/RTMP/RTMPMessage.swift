@@ -556,7 +556,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return super.payload
         }
         set {
-            logger.info("Payload: \(payload) \(newValue)")
+            logger.info("Payload: \(super.payload) \(newValue)")
             if (super.payload == newValue) {
                 return
             }
