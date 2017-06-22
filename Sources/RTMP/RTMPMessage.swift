@@ -556,20 +556,26 @@ final class RTMPAudioMessage: RTMPMessage {
             return super.payload
         }
         set {
-            logger.info("Payload: \(super.payload) \(newValue)")
+            logger.info("Payload: \(payload)\nSuper Payload: \(super.payload)\nNew Value: \(newValue)")
             if (super.payload == newValue) {
+                logger.info("super.payload == newValue")
                 return
             }
 
+            logger.info("assigning newValue to super.pay;pad")
             super.payload = newValue
 
+            logger.info("length: \(length) newValueCount: \(newValue.count) newValueEmpty: \(newValue.isEmpty)")
             if (length == newValue.count && !newValue.isEmpty) {
+                logger.info("Getting essential values")
                 guard let codec:FLVAudioCodec = FLVAudioCodec(rawValue: newValue[0] >> 4),
                     let soundRate:FLVSoundRate = FLVSoundRate(rawValue: (newValue[0] & 0b00001100) >> 2),
                     let soundSize:FLVSoundSize = FLVSoundSize(rawValue: (newValue[0] & 0b00000010) >> 1),
                     let soundType:FLVSoundType = FLVSoundType(rawValue: (newValue[0] & 0b00000001)) else {
+                    logger.info("Can't get values, returning early")
                     return
                 }
+                logger.info("Values:\nCodec: \(codec)\nSoundRate: \(soundRate)\nSoundSize: \(soundSize)\nSoundType: \(soundType)")
                 self.codec = codec
                 self.soundRate = soundRate
                 self.soundSize = soundSize
