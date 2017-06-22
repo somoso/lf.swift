@@ -544,6 +544,7 @@ final class RTMPAudioMessage: RTMPMessage {
 
     var soundData:Data {
         let data:Data = payload.isEmpty ? Data() : payload.advanced(by: codec.headerSize)
+        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
         guard let config:MP3AudioSpecificConfig = config else {
             return data
         }
@@ -555,6 +556,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return super.payload
         }
         set {
+            logger.info("Payload: \(payload)")
             if (super.payload == newValue) {
                 return
             }
@@ -601,6 +603,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return
         }
         self.config = stream.mixer.audioIO.playback.config
+        logger.info("Executing stream - codec: \(codec)\nconfig: \(config)\nsoundData: \(soundData)")
         stream.mixer.audioIO.playback.parseBytes(soundData)
     }
 

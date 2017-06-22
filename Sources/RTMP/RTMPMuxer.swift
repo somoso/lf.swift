@@ -9,7 +9,7 @@ protocol RTMPMuxerDelegate: class {
 
 // MARK: -
 final class RTMPMuxer {
-    static let aac:UInt8 = FLVAudioCodec.aac.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
+    //static let aac:UInt8 = FLVAudioCodec.aac.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
     static let mp3:UInt8 = FLVAudioCodec.mp3.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
 
     weak var delegate:RTMPMuxerDelegate? = nil
@@ -27,6 +27,7 @@ final class RTMPMuxer {
 extension RTMPMuxer: MP3AudioEncoderDelegate {
     // MARK: AudioEncoderDelegate
     func didSetFormatDescription(audio formatDescription: CMFormatDescription?) {
+        logger.info("RTMPMuxer; MP3AudioEncoderDelegate: didSetFormatDescription")
         guard let formatDescription:CMFormatDescription = formatDescription else {
             return
         }
@@ -36,6 +37,7 @@ extension RTMPMuxer: MP3AudioEncoderDelegate {
     }
 
     func sampleOutput(audio sampleBuffer: CMSampleBuffer) {
+        logger.info("RTMPMuxer; MP3AudioEncoderDelegate: sampleOutput")
         var blockBuffer:CMBlockBuffer?
         var audioBufferList:AudioBufferList = AudioBufferList()
         CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(

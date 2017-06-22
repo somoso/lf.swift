@@ -289,7 +289,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveAudio(flag:Bool) {
-        logger.info("Receiving audio")
+        logger.info("Receiving audio? \(flag)")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return
@@ -306,7 +306,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveVideo(flag:Bool) {
-        logger.info("Receiving video")
+        logger.info("Receiving video? \(flag)")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return
@@ -323,11 +323,12 @@ open class RTMPStream: NetStream {
     }
 
     open func play(_ arguments:Any?...) {
-        logger.info("Playing")
+        logger.info("Playing, args: \(arguments)")
         lockQueue.async {
             guard let name:String = arguments.first as? String else {
                 switch self.readyState {
                 case .play, .playing:
+                    logger.info("State play/playing - stopping")
                     self.rtmpConnection.socket.doOutput(chunk: RTMPChunk(
                         type: .zero,
                         streamId: RTMPChunk.StreamID.audio.rawValue,
@@ -341,6 +342,7 @@ open class RTMPStream: NetStream {
                     )), locked: nil)
                     self.info.resourceName = nil
                 default:
+                    logger.info("Default state, breaking")
                     break
                 }
                 return
@@ -349,6 +351,7 @@ open class RTMPStream: NetStream {
                 usleep(100)
             }
             self.info.resourceName = name
+            logger.info("Sending play cmd, resname: \(self.info.resourceName)")
             self.rtmpConnection.socket.doOutput(chunk: RTMPChunk(message: RTMPCommandMessage(
                 streamId: self.id,
                 transactionId: 0,
