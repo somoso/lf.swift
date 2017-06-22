@@ -667,7 +667,7 @@ final class MP4TrakReader {
     func execute(_ reader:MP4Reader) {
         do {
             handle = try FileHandle(forReadingFrom: reader.url)
-            print("Trak, \(trak)")
+            logger.info("Trak, \(trak)")
             if let avcC:MP4Box = trak.getBoxes(byName: "avcC").first {
                 delegate?.didSet(config: reader.readData(ofBox: avcC), withID: id, type: AVMediaTypeVideo)
             }
