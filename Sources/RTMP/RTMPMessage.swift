@@ -615,26 +615,30 @@ final class RTMPAudioMessage: RTMPMessage {
             return
         }
         self.config = stream.mixer.audioIO.playback.config
-        logger.info("Executing stream - codec: \(codec)\nconfig: \(config)\nsoundData: \(soundData)")
+        logger.info("Executing stream - codec: \(codec)\nconfig: \(config)\nsoundData: \(soundData.hexEncodedString())")
         stream.mixer.audioIO.playback.parseBytes(soundData)
     }
 
     func createAudioSpecificConfig() -> MP3AudioSpecificConfig? {
-        logger.info("Payload: \(payload)\ncodec:\(codec)")
+        logger.info("Payload: \(payload.hexEncodedString())\ncodec:\(codec)")
         if (payload.isEmpty) {
+            logger.info("Returning nil - payload empty")
             return nil
         }
 
         guard codec == FLVAudioCodec.mp3 else {
+            logger.info("Returning nil - not mp3 codec")
             return nil
         }
 
         if (payload[1] == FLVMP3PacketType.seq.rawValue) {
             if let config:MP3AudioSpecificConfig = MP3AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
+                logger.info("Returning config")
                 return config
             }
         }
 
+        logger.info("Returning nil - failed all cases")
         return nil
     }
 }
