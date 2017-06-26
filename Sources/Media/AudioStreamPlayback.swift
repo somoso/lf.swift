@@ -29,6 +29,7 @@ class AudioStreamPlayback {
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
                 return
             }
+            logger.info("File Type Hint: \(fileTypeHint)")
             var fileStreamID:OpaquePointer? = nil
             if AudioFileStreamOpen(
                 unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
@@ -101,6 +102,7 @@ class AudioStreamPlayback {
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
             return
         }
+        logger.info("parseBytes data \(data.hexEncodedString())")
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
             AudioFileStreamParseBytes(
                 fileStreamID,
