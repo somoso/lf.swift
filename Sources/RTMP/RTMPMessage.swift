@@ -562,16 +562,16 @@ final class RTMPAudioMessage: RTMPMessage {
             return super.payload
         }
         set {
-            logger.info("Payload: \(payload)\nSuper Payload: \(super.payload)\nNew Value: \(newValue)")
+            logger.info("Payload: \(payload.hexEncodedString())\nSuper Payload: \(super.payload.hexEncodedString())\nNew Value: \(newValue)")
             if (super.payload == newValue) {
                 logger.info("super.payload == newValue")
                 return
             }
 
-            logger.info("assigning newValue to super.pay;pad")
+            logger.info("assigning newValue to super.payload")
             super.payload = newValue
 
-            logger.info("length: \(length) newValueCount: \(newValue.count) newValueEmpty: \(newValue.isEmpty)")
+            logger.info("Payload: \(super.payload.hexEncodedString())")
             if (length == newValue.count && !newValue.isEmpty) {
                 logger.info("Getting essential values")
                 guard let codec:FLVAudioCodec = FLVAudioCodec(rawValue: newValue[0] >> 4),
@@ -581,17 +581,18 @@ final class RTMPAudioMessage: RTMPMessage {
                     logger.info("Can't get values, returning early")
                     return
                 }
-                logger.info("Values:\nCodec: \(codec)\nSoundRate: \(soundRate)\nSoundSize: \(soundSize)\nSoundType: \(soundType)")
                 self.codec = codec
                 self.soundRate = soundRate
                 self.soundSize = soundSize
                 self.soundType = soundType
+                logger.info("Payload info - Codec: \(self.codec)\nSound Rate: \(self.soundRate)\nSound Size: \(self.soundSize)\nSound Type: \(self.soundType)")
             }
         }
     }
 
     init() {
         super.init(type: .audio)
+        logger.info("Just a raw RTMP audio message...")
     }
 
     init(streamId: UInt32, timestamp: UInt32, payload:Data) {
@@ -599,6 +600,7 @@ final class RTMPAudioMessage: RTMPMessage {
         self.streamId = streamId
         self.timestamp = timestamp
         self.payload = payload
+        logger.info("Stream ID: \(self.streamId)\nTimestamp: \(timestamp)\nPayload: \(self.payload.hexEncodedString())")
     }
 
     override func execute(_ connection:RTMPConnection) {
