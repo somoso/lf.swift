@@ -99,8 +99,8 @@ class AudioStreamPlayback {
     }
 
     func parseBytes(_ data:Data) {
+        logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
-            logger.info("fileStreamId is not matching, not parsing bytes.\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
             return
         }
         logger.info("parseBytes data \(data.hexEncodedString())")
