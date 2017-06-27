@@ -541,7 +541,7 @@ final class RTMPSharedObjectMessage: RTMPMessage {
  7.1.5. Audio Message (9)
  */
 final class RTMPAudioMessage: RTMPMessage {
-    var config:MP3AudioSpecificConfig?
+    var config:AudioSpecificConfig?
 
     private(set) var codec:FLVAudioCodec = .mp3
     private(set) var soundRate:FLVSoundRate = .kHz44
@@ -550,7 +550,7 @@ final class RTMPAudioMessage: RTMPMessage {
 
     var soundData:Data {
         let data:Data = payload.isEmpty ? Data() : payload.advanced(by: codec.headerSize)
-        guard let config:MP3AudioSpecificConfig = config else {
+        guard let config:AudioSpecificConfig = config else {
             return data
         }
         logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
@@ -611,7 +611,7 @@ final class RTMPAudioMessage: RTMPMessage {
         guard codec.isSupported else {
             return
         }
-        if let config:MP3AudioSpecificConfig = createAudioSpecificConfig() {
+        if let config:AudioSpecificConfig = createAudioSpecificConfig() {
             stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP3Type
             stream.mixer.audioIO.playback.config = config
             return
@@ -621,7 +621,7 @@ final class RTMPAudioMessage: RTMPMessage {
         stream.mixer.audioIO.playback.parseBytes(soundData)
     }
 
-    func createAudioSpecificConfig() -> MP3AudioSpecificConfig? {
+    func createAudioSpecificConfig() -> AudioSpecificConfig? {
         logger.info("Payload: \(payload.hexEncodedString())\ncodec:\(codec)")
         if (payload.isEmpty) {
             logger.info("Returning nil - payload empty")
@@ -633,11 +633,18 @@ final class RTMPAudioMessage: RTMPMessage {
             return nil
         }
 
-
-        if let config:MP3AudioSpecificConfig = MP3AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
-            logger.info("Returning config")
-            return config
-        }
+        logger.info("Payload packet type: \(payload[1])")
+//        if (payload[1] == FLVMP3PacketType.seq.rawValue) {
+            logger.info("Payload packet type is MP3 type")
+            if let config:AudioSpecificConfig = AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
+                logger.info("Returning config")
+                return config
+            } else {
+                logger.info("Failed to get config")
+            }
+//        } else {
+//            logger.info("Payload packet type is not MP3 type")
+//        }
 
 
         logger.info("Returning nil - failed all cases")

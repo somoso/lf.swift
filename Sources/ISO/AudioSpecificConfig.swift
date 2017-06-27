@@ -96,6 +96,7 @@ enum AudioObjectType: UInt8 {
     case twinqVQ     = 7
     case celp        = 8
     case hxvc        = 9
+    case mp3         = 33
 
     init(objectID: MPEG4ObjectID) {
         switch objectID {
@@ -117,6 +118,8 @@ enum AudioObjectType: UInt8 {
             self = .celp
         case .HVXC:
             self = .hxvc
+        default:
+            self = .mp3
         }
     }
 }

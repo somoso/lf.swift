@@ -8,7 +8,7 @@ class AudioStreamPlayback {
     static let defaultMaxPacketDescriptions:Int = 1
 
     var await:Bool = false
-    var config:MP3AudioSpecificConfig?
+    var config:AudioSpecificConfig?
     var runloop:CFRunLoop? = nil
     var numberOfBuffers:Int = AudioStreamPlayback.defaultNumberOfBuffers
     var maxPacketDescriptions:Int = AudioStreamPlayback.defaultMaxPacketDescriptions
