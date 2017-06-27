@@ -633,12 +633,12 @@ final class RTMPAudioMessage: RTMPMessage {
             return nil
         }
 
-        if (payload[1] == FLVMP3PacketType.seq.rawValue) {
-            if let config:MP3AudioSpecificConfig = MP3AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
-                logger.info("Returning config")
-                return config
-            }
+
+        if let config:MP3AudioSpecificConfig = MP3AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
+            logger.info("Returning config")
+            return config
         }
+
 
         logger.info("Returning nil - failed all cases")
         return nil
