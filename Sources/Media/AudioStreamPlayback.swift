@@ -26,10 +26,10 @@ class AudioStreamPlayback {
     var formatDescription:AudioStreamBasicDescription? = nil
     var fileTypeHint:AudioFileTypeID? = nil {
         didSet {
+            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
                 return
             }
-            logger.info("File Type Hint: \(fileTypeHint)")
             var fileStreamID:OpaquePointer? = nil
             if AudioFileStreamOpen(
                 unsafeBitCast(self, to: UnsafeMutableRawPointer.self),

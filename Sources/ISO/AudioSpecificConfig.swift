@@ -24,6 +24,7 @@ struct AudioSpecificConfig {
     }
 
     init?(bytes:[UInt8]) {
+        logger.info("ASC init: \(bytes.map { String(format: "%02hhx", $0)}.joined())")
         guard let
             type:AudioObjectType = AudioObjectType(rawValue: bytes[0] >> 3),
             let frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] & 0b00000111) << 1 | (bytes[1] >> 7)),
