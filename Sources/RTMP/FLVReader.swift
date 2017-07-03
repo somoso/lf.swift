@@ -146,6 +146,8 @@ enum FLVAudioCodec:UInt8 {
         switch self {
         case .aac:
             return 2
+        case .mp3:
+            return 0
         default:
             return 1
         }
