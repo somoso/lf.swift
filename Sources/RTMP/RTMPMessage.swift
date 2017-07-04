@@ -618,7 +618,8 @@ final class RTMPAudioMessage: RTMPMessage {
         }
         self.config = stream.mixer.audioIO.playback.config
         logger.info("Executing stream - " +
-                "codec: \(codec)\nconfig: \(config)" +
+                "codec: \(codec)\n" +
+                "config: \(config)" +
                 "\nsoundData: \(soundData.hexEncodedString())" +
                 "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
                 "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
