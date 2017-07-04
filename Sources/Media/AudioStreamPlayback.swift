@@ -105,7 +105,7 @@ class AudioStreamPlayback {
         }
         logger.info("parseBytes data \(data.hexEncodedString())")
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
-            var osData = AudioFileStreamParseBytes(
+            let osData = AudioFileStreamParseBytes(
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
