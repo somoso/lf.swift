@@ -26,7 +26,7 @@ final class MP3Encoder: NSObject {
 
     static let packetSize:UInt32 = 1
     static let sizeOfUInt32:UInt32 = UInt32(MemoryLayout<UInt32>.size)
-    static let framesPerPacket:UInt32 = 1
+    static let framesPerPacket:UInt32 = 0
 
     static let defaultBitrate:UInt32 = 64 * 1024
     // 0 means according to a input source
