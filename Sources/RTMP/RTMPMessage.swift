@@ -614,7 +614,8 @@ final class RTMPAudioMessage: RTMPMessage {
         if let config:AudioSpecificConfig = createAudioSpecificConfig() {
             stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP3Type
             stream.mixer.audioIO.playback.config = config
-            return
+            stream.mixer.audioIO.playback.parseBytes(soundData)
+            //return
         }
         self.config = stream.mixer.audioIO.playback.config
         logger.info("Executing stream - codec: \(codec)\nconfig: \(config)\nsoundData: \(soundData.hexEncodedString())")
@@ -623,25 +624,25 @@ final class RTMPAudioMessage: RTMPMessage {
 
     func createAudioSpecificConfig() -> AudioSpecificConfig? {
 //        logger.info("Payload: \(payload.hexEncodedString())\ncodec:\(codec)")
-//        if (payload.isEmpty) {
-////            logger.info("Returning nil - payload empty")
-//            return nil
-//        }
-//
-//        guard codec == FLVAudioCodec.mp3 else {
-////            logger.info("Returning nil - not mp3 codec")
-//            return nil
-//        }
+        if (payload.isEmpty) {
+//            logger.info("Returning nil - payload empty")
+            return nil
+        }
+
+        guard codec == FLVAudioCodec.mp3 else {
+//            logger.info("Returning nil - not mp3 codec")
+            return nil
+        }
 
 //        logger.info("Payload packet type: \(payload[1])")
 //        if (payload[1] == FLVMP3PacketType.seq.rawValue) {
 //            logger.info("Payload packet type is MP3 type")
-//            if let config:AudioSpecificConfig = AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
-////                logger.info("Returning config")
-//                return config
-//            } else {
-////                logger.info("Failed to get config")
-//            }
+            if let config:AudioSpecificConfig = AudioSpecificConfig(bytes: Array<UInt8>(payload[codec.headerSize..<payload.count])) {
+//                logger.info("Returning config")
+                return config
+            } else {
+//                logger.info("Failed to get config")
+            }
 //        } else {
 //            logger.info("Payload packet type is not MP3 type")
 //        }
