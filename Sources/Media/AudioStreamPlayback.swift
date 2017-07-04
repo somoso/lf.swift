@@ -26,7 +26,7 @@ class AudioStreamPlayback {
     var formatDescription:AudioStreamBasicDescription? = nil
     var fileTypeHint:AudioFileTypeID? = nil {
         didSet {
-            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
+//            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
                 return
             }
