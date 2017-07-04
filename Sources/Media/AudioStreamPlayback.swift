@@ -105,13 +105,13 @@ class AudioStreamPlayback {
         }
         logger.info("parseBytes data \(data.hexEncodedString())")
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
-            var data = AudioFileStreamParseBytes(
+            var osData = AudioFileStreamParseBytes(
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
                 AudioFileStreamParseFlags.discontinuity
             )
-            logger.info("Returned back \(data)")
+            logger.info("Returned back \(osData) from \(data)")
         }
     }
 
