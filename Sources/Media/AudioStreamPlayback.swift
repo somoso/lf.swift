@@ -26,8 +26,9 @@ class AudioStreamPlayback {
     var formatDescription:AudioStreamBasicDescription? = nil
     var fileTypeHint:AudioFileTypeID? = nil {
         didSet {
-//            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
+            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
+                logger.info("Values are the same, skipping")
                 return
             }
             var fileStreamID:OpaquePointer? = nil
@@ -37,6 +38,7 @@ class AudioStreamPlayback {
                 packetsProc,
                 fileTypeHint,
                 &fileStreamID) == noErr {
+                logger.info("Setting new fileStreamID")
                 self.fileStreamID = fileStreamID
             }
         }
