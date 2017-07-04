@@ -32,14 +32,17 @@ class AudioStreamPlayback {
                 return
             }
             var fileStreamID:OpaquePointer? = nil
-            if AudioFileStreamOpen(
-                unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
-                propertyListenerProc,
-                packetsProc,
-                fileTypeHint,
-                &fileStreamID) == noErr {
+            let answer = AudioFileStreamOpen(
+                    unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
+                    propertyListenerProc,
+                    packetsProc,
+                    fileTypeHint,
+                    &fileStreamID)
+            if answer == noErr {
                 logger.info("Setting new fileStreamID")
                 self.fileStreamID = fileStreamID
+            } else {
+                logger.info("AudioFileStreamOpen failed: \(answer)")
             }
         }
     }
@@ -113,7 +116,11 @@ class AudioStreamPlayback {
                 bytes,
                 AudioFileStreamParseFlags.discontinuity
             )
-            logger.info("Returned back \(osData) from \(data)")
+            if (osData == noErr) {
+                logger.info("Buffering is apparently fine")
+            } else {
+                logger.info("Error'd! Returned back \(osData) from \(data)")
+            }
         }
     }
 
