@@ -549,7 +549,7 @@ final class RTMPAudioMessage: RTMPMessage {
     private(set) var soundType:FLVSoundType = .stereo
 
     var soundData:Data {
-        let data:Data = payload.isEmpty ? Data() : payload.advanced(by: codec.headerSize)
+        let data:Data = payload.isEmpty ? Data() : payload//.advanced(by: codec.headerSize)
         guard let config:AudioSpecificConfig = config else {
             return data
         }

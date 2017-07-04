@@ -109,7 +109,7 @@ class AudioStreamPlayback {
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
-                AudioFileStreamParseFlags(rawValue: 0)
+                AudioFileStreamParseFlags.discontinuity
             )
         }
     }
