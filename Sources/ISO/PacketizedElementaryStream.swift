@@ -157,7 +157,7 @@ struct PacketizedElementaryStream: PESPacketHeader {
 
     init?(sampleBuffer:CMSampleBuffer, timestamp:CMTime, config:AudioSpecificConfig?) {
         let payload:[UInt8] = sampleBuffer.bytes
-        data += config!.adts(payload.count)
+//        data += config?.adts(payload.count)
         data += payload
         optionalPESHeader = PESOptionalHeader()
         optionalPESHeader?.dataAlignmentIndicator = true

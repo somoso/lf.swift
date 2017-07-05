@@ -11,15 +11,14 @@ import AVFoundation
 struct AudioSpecificConfig {
     static let ADTSHeaderSize:Int = 7
 
-    var type:AudioObjectType
     var frequency:SamplingFrequency
+    var sampleSize:UInt8
     var channel:ChannelConfiguration
     var frameLengthFlag:Bool = false
 
     var bytes:[UInt8] {
         var bytes:[UInt8] = [UInt8](repeating: 0, count: 2)
-        bytes[0] = type.rawValue << 3 | (frequency.rawValue >> 1 & 0x3)
-        bytes[1] = (frequency.rawValue & 0x1) << 7 | (channel.rawValue & 0xF) << 3
+        bytes[0] = 0b00100000 | frequency.rawValue << 2 | channel
         return bytes
     }
 
@@ -27,52 +26,37 @@ struct AudioSpecificConfig {
 //        logger.info("ASC init: \(bytes.map { String(format: "%02hhx", $0)}.joined())")
 //        logger.info("Values - byte0: \(bytes[0]) (in hex: \(String(format: "%02hhx", bytes[0])))")
         guard let
-            type:AudioObjectType = AudioObjectType(rawValue: bytes[0] >> 4),
             let frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] >> 2) & 0b00011),
-            let channel:ChannelConfiguration = ChannelConfiguration(rawValue: (bytes[0] >> 1) & 0b0001) else {
+            let sampleSize:UInt8 = ((bytes[0] >> 1) & 0b0001),
+            let channel:ChannelConfiguration = ChannelConfiguration(rawValue: bytes[0] & 0b00000001) else {
             return nil
         }
-        self.type = type
+        self.sampleSize = sampleSize
         self.frequency = frequency
         self.channel = channel
     }
 
-    init(type:AudioObjectType, frequency:SamplingFrequency, channel:ChannelConfiguration) {
-        self.type = type
+    init(frequency:SamplingFrequency, channel:ChannelConfiguration, sampleSize: UInt8) {
         self.frequency = frequency
         self.channel = channel
+        self.sampleSize = sampleSize;
     }
 
     init(formatDescription: CMFormatDescription) {
         let asbd:AudioStreamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription)!.pointee
-        type = AudioObjectType(objectID: MPEG4ObjectID(rawValue: Int(asbd.mFormatFlags))!)
         frequency = SamplingFrequency(sampleRate: asbd.mSampleRate)
         channel = ChannelConfiguration(rawValue: UInt8(asbd.mChannelsPerFrame))!
-    }
-
-    func adts(_ length:Int) -> [UInt8] {
-        let size:Int = 7
-        let fullSize:Int = size + length
-        var adts:[UInt8] = [UInt8](repeating: 0x00, count: size)
-        adts[0] = 0xFF
-        adts[1] = 0xF9
-        adts[2] = (type.rawValue - 1) << 6 | (frequency.rawValue << 2) | (channel.rawValue >> 2)
-        adts[3] = (channel.rawValue & 3) << 6 | UInt8(fullSize >> 11)
-        adts[4] = UInt8((fullSize & 0x7FF) >> 3)
-        adts[5] = ((UInt8(fullSize & 7)) << 5) + 0x1F
-        adts[6] = 0xFC
-        return adts
     }
 
     func createAudioStreamBasicDescription() -> AudioStreamBasicDescription {
         var asbd:AudioStreamBasicDescription = AudioStreamBasicDescription()
         asbd.mSampleRate = frequency.sampleRate
-        asbd.mFormatID = kAudioFormatMPEG4AAC
-        asbd.mFormatFlags = UInt32(type.rawValue)
+        asbd.mFormatID = kAudioFormatMPEGLayer3
+        asbd.mFormatFlags = 0
         asbd.mBytesPerPacket = 0
-        asbd.mFramesPerPacket = frameLengthFlag ? 960 : 1024
+        asbd.mFramesPerPacket = 0
         asbd.mBytesPerFrame = 0
-        asbd.mChannelsPerFrame = UInt32(channel.rawValue)
+        asbd.mChannelsPerFrame = channel == ChannelConfiguration.mono ? 1 : 2
         asbd.mBitsPerChannel = 0
         asbd.mReserved = 0
         return asbd
@@ -83,46 +67,6 @@ extension AudioSpecificConfig: CustomStringConvertible {
     // MARK: CustomStringConvertible
     var description:String {
         return Mirror(reflecting: self).description
-    }
-}
-
-// MARK: -
-enum AudioObjectType: UInt8 {
-    case unknown     = 0
-    case aacMain     = 1
-    case aaclc       = 2
-    case aacssr      = 3
-    case aacltp      = 4
-    case aacsbr      = 5
-    case aacScalable = 6
-    case twinqVQ     = 7
-    case celp        = 8
-    case hxvc        = 9
-    case mp3         = 33
-
-    init(objectID: MPEG4ObjectID) {
-        switch objectID {
-        case .aac_Main:
-            self = .aacMain
-        case .AAC_LC:
-            self = .aaclc
-        case .AAC_SSR:
-            self = .aacssr
-        case .AAC_LTP:
-            self = .aacltp
-        case .AAC_SBR:
-            self = .aacsbr
-        case .aac_Scalable:
-            self = .aacScalable
-        case .twinVQ:
-            self = .twinqVQ
-        case .CELP:
-            self = .celp
-        case .HVXC:
-            self = .hxvc
-        default:
-            self = .mp3
-        }
     }
 }
 
@@ -209,12 +153,6 @@ enum SamplingFrequency: UInt8 {
 
 // MARK: -
 enum ChannelConfiguration: UInt8 {
-    case definedInAOTSpecificConfig = 0
-    case frontCenter = 1
-    case frontLeftAndFrontRight = 2
-    case frontCenterAndFrontLeftAndFrontRight = 3
-    case frontCenterAndFrontLeftAndFrontRightAndBackCenter = 4
-    case frontCenterAndFrontLeftAndFrontRightAndBackLeftAndBackRight = 5
-    case frontCenterAndFrontLeftAndFrontRightAndBackLeftAndBackRightLFE = 6
-    case frontCenterAndFrontLeftAndFrontRightAndSideLeftAndSideRightAndBackLeftAndBackRightLFE = 7
+    case mono = 0
+    case stereo = 1
 }
