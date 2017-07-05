@@ -17,8 +17,8 @@ struct AudioSpecificConfig {
     var frameLengthFlag:Bool = false
 
     var bytes:[UInt8] {
-        var bytes:[UInt8] = [UInt8](repeating: 0, count: 2)
-        bytes[0] = 0b00100000 | frequency.rawValue << 2 | channel
+        var bytes:[UInt8] = [UInt8](repeating: 0, count: 1)
+        bytes[0] = 0b00100000 | frequency.rawValue << 2 | sampleSize | (channel == ChannelConfiguration.mono ? 0 : 1)
         return bytes
     }
 
@@ -26,7 +26,7 @@ struct AudioSpecificConfig {
 //        logger.info("ASC init: \(bytes.map { String(format: "%02hhx", $0)}.joined())")
 //        logger.info("Values - byte0: \(bytes[0]) (in hex: \(String(format: "%02hhx", bytes[0])))")
         guard let
-            let frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] >> 2) & 0b00011),
+            frequency:SamplingFrequency = SamplingFrequency(rawValue: (bytes[0] >> 2) & 0b00011),
             let sampleSize:UInt8 = ((bytes[0] >> 1) & 0b0001),
             let channel:ChannelConfiguration = ChannelConfiguration(rawValue: bytes[0] & 0b00000001) else {
             return nil
@@ -46,6 +46,7 @@ struct AudioSpecificConfig {
         let asbd:AudioStreamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription)!.pointee
         frequency = SamplingFrequency(sampleRate: asbd.mSampleRate)
         channel = ChannelConfiguration(rawValue: UInt8(asbd.mChannelsPerFrame))!
+        sampleSize = 0
     }
 
     func createAudioStreamBasicDescription() -> AudioStreamBasicDescription {
