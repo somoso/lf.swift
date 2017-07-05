@@ -115,13 +115,14 @@ class AudioStreamPlayback {
             var fileHandle: FileHandle?
 
             do {
-                try fileHandle = FileHandle(forWritingTo: tmpUrl)
-                defer {
-                    fileHandle?.closeFile()
-                }
+                try fileHandle = FileHandle(forWritingAtPath: tmpUrl.path)
+                logger.info("Writing \(data.hexEncodedString()) to File Handle: \(fileHandle)")
                 fileHandle!.seekToEndOfFile()
                 fileHandle!.write(data)
-
+                defer {
+                    logger.info("Closing file")
+                    fileHandle?.closeFile()
+                }
             } catch (let err) {
                 logger.error("Failed writing to file: \(err)")
             }
