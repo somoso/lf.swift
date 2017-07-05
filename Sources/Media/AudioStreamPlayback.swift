@@ -115,12 +115,12 @@ class AudioStreamPlayback {
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
-                0
+                AudioFileStreamParseFlags(rawValue: 0)
             )
             if (osData == noErr) {
                 //logger.info("Buffering is apparently fine")
             } else {
-                logger.error("Error'd! Returned back \(osData) from \(data.hexEncodedString().substring(to:8))")
+                logger.error("Error'd! Returned back \(osData) from \(data.hexEncodedString())")
             }
         }
     }
