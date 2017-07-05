@@ -135,7 +135,7 @@ class AudioStreamPlayback {
     func parseBytes(_ data:Data) {
         logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
 
-        appendData(data)
+        appendData(data.advanced(by: 1))
 
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
             return
