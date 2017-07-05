@@ -499,7 +499,7 @@ extension RTMPConnection: RTMPSocketDelegate {
             currentChunk = nil
             messages[chunk.streamId] = message
             if (position < data.count) {
-                logger.info("Relistening - Position: \(position) data: \(data)")
+                logger.info("Relistening - Position: \(position) data: \(data.hexEncodedString())")
                 listen(data.advanced(by: position))
             }
             return
@@ -513,7 +513,7 @@ extension RTMPConnection: RTMPSocketDelegate {
             fragmentedChunks.removeValue(forKey: chunk.streamId)
         }
 
-        logger.info("Position: \(position) data: \(data)")
+        logger.info("Position: \(position) data: \(data.hexEncodedString())")
 
         if (position < data.count) {
             listen(data.advanced(by: position))
