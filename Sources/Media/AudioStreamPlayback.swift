@@ -26,9 +26,9 @@ class AudioStreamPlayback {
     var formatDescription:AudioStreamBasicDescription? = nil
     var fileTypeHint:AudioFileTypeID? = nil {
         didSet {
-            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
+//            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
-                logger.info("Values are the same, skipping")
+//                logger.info("Values are the same, skipping")
                 return
             }
             var fileStreamID:OpaquePointer? = nil
@@ -39,10 +39,10 @@ class AudioStreamPlayback {
                     fileTypeHint,
                     &fileStreamID)
             if answer == noErr {
-                logger.info("Setting new fileStreamID")
+                //logger.info("Setting new fileStreamID")
                 self.fileStreamID = fileStreamID
             } else {
-                logger.info("AudioFileStreamOpen failed: \(answer)")
+                logger.error("AudioFileStreamOpen failed: \(answer)")
             }
         }
     }
@@ -103,44 +103,13 @@ class AudioStreamPlayback {
         playback.onPropertyChangeForFileStream(inAudioFileStream, inPropertyID, ioFlags)
     }
 
-    func appendData(_ data:Data) {
-
-        let fileManager = FileManager.default
-
-        let tmpUrl = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-                .appendingPathComponent("stream")
-                .appendingPathExtension("mp3")
-
-        if fileManager.fileExists(atPath: tmpUrl.path) {
-            var fileHandle: FileHandle?
-
-            do {
-                try fileHandle = FileHandle(forWritingAtPath: tmpUrl.path)
-                logger.info("Writing \(data.hexEncodedString()) to File Handle: \(fileHandle)")
-                fileHandle!.seekToEndOfFile()
-                fileHandle!.write(data)
-                defer {
-                    logger.info("Closing file")
-                    fileHandle?.closeFile()
-                }
-            } catch (let err) {
-                logger.error("Failed writing to file: \(err)")
-            }
-        } else {
-            let result = fileManager.createFile(atPath: tmpUrl.path, contents: data)
-            logger.info("Wrote to \(tmpUrl.path) successfully? \(result)")
-        }
-    }
-
     func parseBytes(_ data:Data) {
-        logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
-
-        appendData(data.advanced(by: 1))
+        //logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
 
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
             return
         }
-        logger.info("parseBytes data \(data.hexEncodedString())")
+        //logger.info("parseBytes data \(data.hexEncodedString())")
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
             let osData = AudioFileStreamParseBytes(
                 fileStreamID,
@@ -149,9 +118,9 @@ class AudioStreamPlayback {
                 AudioFileStreamParseFlags.discontinuity
             )
             if (osData == noErr) {
-                logger.info("Buffering is apparently fine")
+                //logger.info("Buffering is apparently fine")
             } else {
-                logger.info("Error'd! Returned back \(osData) from \(data)")
+                logger.error("Error'd! Returned back \(osData) from \(data)")
             }
         }
     }

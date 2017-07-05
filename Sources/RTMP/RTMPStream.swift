@@ -289,7 +289,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveAudio(flag:Bool) {
-        logger.info("Receiving audio? \(flag)")
+//        logger.info("Receiving audio? \(flag)")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return

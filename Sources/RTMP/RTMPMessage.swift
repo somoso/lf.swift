@@ -553,7 +553,7 @@ final class RTMPAudioMessage: RTMPMessage {
         guard let config:AudioSpecificConfig = config else {
             return data
         }
-        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
+//        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
         return data;
     }
 
@@ -571,7 +571,7 @@ final class RTMPAudioMessage: RTMPMessage {
 //            logger.info("assigning newValue to super.payload")
             super.payload = newValue
 
-            logger.info("Payload: \(super.payload.hexEncodedString())")
+//            logger.info("Payload: \(super.payload.hexEncodedString())")
             if (length == newValue.count && !newValue.isEmpty) {
 //                logger.info("Getting essential values")
                 guard let codec:FLVAudioCodec = FLVAudioCodec(rawValue: newValue[0] >> 4),
@@ -617,17 +617,17 @@ final class RTMPAudioMessage: RTMPMessage {
 //            return
         }
         self.config = stream.mixer.audioIO.playback.config
-        logger.info("Executing stream - " +
-                "codec: \(codec)\n" +
-                "config: \(config)" +
-                "\nsoundData: \(soundData.hexEncodedString())" +
-                "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
-                "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
-        stream.mixer.audioIO.playback.parseBytes(soundData)
+//        logger.info("Executing stream - " +
+//                "codec: \(codec)\n" +
+//                "config: \(config)" +
+//                "\nsoundData: \(soundData.hexEncodedString())" +
+//                "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
+//                "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
+        stream.mixer.audioIO.playback.parseBytes(soundData.advanced(by: 1))
     }
 
     func createAudioSpecificConfig() -> AudioSpecificConfig? {
-        logger.info("Payload: \(payload.hexEncodedString())\ncodec:\(codec)")
+//        logger.info("Payload: \(payload.hexEncodedString())\ncodec:\(codec)")
         if (payload.isEmpty) {
 //            logger.info("Returning nil - payload empty")
             return nil
