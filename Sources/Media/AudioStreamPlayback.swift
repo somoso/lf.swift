@@ -103,8 +103,39 @@ class AudioStreamPlayback {
         playback.onPropertyChangeForFileStream(inAudioFileStream, inPropertyID, ioFlags)
     }
 
+    func appendData(_ data:Data) {
+
+        let fileManager = FileManager.default
+
+        let tmpUrl = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+                .appendingPathComponent("stream")
+                .appendingPathExtension("mp3")
+
+        if fileManager.fileExists(atPath: tmpUrl.path) {
+            var fileHandle: FileHandle?
+
+            do {
+                try fileHandle = FileHandle(forWritingTo: tmpUrl)
+                defer {
+                    fileHandle?.closeFile()
+                }
+                fileHandle!.seekToEndOfFile()
+                fileHandle!.write(data)
+
+            } catch (let err) {
+                logger.error("Failed writing to file: \(err)")
+            }
+        } else {
+            let result = fileManager.createFile(atPath: tmpUrl.path, contents: data)
+            logger.info("Wrote to \(tmpUrl.path) successfully? \(result)")
+        }
+    }
+
     func parseBytes(_ data:Data) {
         logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
+
+        appendData(data)
+
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
             return
         }
