@@ -109,18 +109,18 @@ class AudioStreamPlayback {
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
             return
         }
-        //logger.info("parseBytes data \(data.hexEncodedString())")
+        logger.info("parseBytes data \(data.hexEncodedString())")
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
             let osData = AudioFileStreamParseBytes(
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
-                AudioFileStreamParseFlags.discontinuity
+                0
             )
             if (osData == noErr) {
                 //logger.info("Buffering is apparently fine")
             } else {
-                logger.error("Error'd! Returned back \(osData) from \(data)")
+                logger.error("Error'd! Returned back \(osData) from \(data.hexEncodedString().substring(to:8))")
             }
         }
     }
