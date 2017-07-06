@@ -502,7 +502,7 @@ extension RTMPConnection: RTMPSocketDelegate {
                 logger.info("Chunk type zero - assigning stream id \(message.streamId)")
                 streamsmap[chunk.streamId] = message.streamId
             case .one:
-                logger.info("Chunk type one - gettubg \(streamsmap[chunk.streamId])")
+                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
                 if let streamId = streamsmap[chunk.streamId] {
                     message.streamId = streamId
                 }
