@@ -472,7 +472,7 @@ open class RTMPStream: NetStream {
                     streamId: 0,
                     transactionId: 0,
                     objectEncoding: self.objectEncoding,
-                    commandName: "deleteStream",
+                    commandName: "stop",
                     commandObject: nil,
                     arguments: [self.id]
             )), locked: nil)
