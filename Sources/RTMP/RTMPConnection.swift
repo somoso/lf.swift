@@ -468,15 +468,15 @@ extension RTMPConnection: RTMPSocketDelegate {
             return
         }
 
-//        logger.info("Chunk info - size: \(chunk.size)" +
-//                "\ntype: \(chunk.type)" +
-//                "\nstreamID: \(chunk.streamId)" +
-//                "\nheaderSize: \(chunk.headerSize)" +
-//                "\nfragmented: \(chunk.fragmented)" +
-//                "\nready?: \(chunk.ready)" +
-//                "\ndescription: \(chunk.description)" +
-//                "\nData bytes: \(String(format: "%02hhx", chunk.data[1])) \(String(format: "%02hhx", chunk.data[2])) \(String(format: "%02hhx", chunk.data[3]))" +
-//                "\nData count: \(chunk.data.count)")
+        logger.info("Chunk info - size: \(chunk.size)" +
+                "\ntype: \(chunk.type)" +
+                "\nstreamID: \(chunk.streamId)" +
+                "\nheaderSize: \(chunk.headerSize)" +
+                "\nfragmented: \(chunk.fragmented)" +
+                "\nready?: \(chunk.ready)" +
+                "\ndescription: \(chunk.description)" +
+                "\nData bytes: \(String(format: "%02hhx", chunk.data[1])) \(String(format: "%02hhx", chunk.data[2])) \(String(format: "%02hhx", chunk.data[3]))" +
+                "\nData count: \(chunk.data.count)")
 
         var position:Int = chunk.data.count
         if (4 <= chunk.data.count) && (chunk.data[1] == 0xFF) && (chunk.data[2] == 0xFF) && (chunk.data[3] == 0xFF) {
