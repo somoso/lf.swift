@@ -462,20 +462,34 @@ extension RTMPConnection: RTMPSocketDelegate {
     }
 
     func listen(_ data:Data) {
+        logger.info("Current chunk? \(currentChunk)")
         guard let chunk:RTMPChunk = currentChunk ?? RTMPChunk(data, size: socket.chunkSizeC) else {
             socket.inputBuffer.append(data)
             return
         }
 
+        logger.info("Chunk info - size: \(chunk.size)" +
+                "\ntype: \(chunk.type)" +
+                "\nstreamID: \(chunk.streamId)" +
+                "\nheaderSize: \(chunk.headerSize)" +
+                "\nfragmented: \(chunk.fragmented)" +
+                "\nready?: \(chunk.ready)" +
+                "\ndescription: \(chunk.description)" +
+                "\nData bytes: \(chunk.data[1]) \(chunk.data[2]) \(chunk.data[3])" +
+                "\nData count: \(chunk.data.count)")
+
         var position:Int = chunk.data.count
         if (4 <= chunk.data.count) && (chunk.data[1] == 0xFF) && (chunk.data[2] == 0xFF) && (chunk.data[3] == 0xFF) {
+            logger.info("Inc. position by 4")
             position += 4
         }
 
         if (currentChunk != nil) {
+            logger.info("Appending current chunk to chunk")
             position = chunk.append(data, size: socket.chunkSizeC)
         }
         if (chunk.type == .two) {
+            logger.info("Chunk is type two")
             position = chunk.append(data, message: messages[chunk.streamId])
         }
 
@@ -485,14 +499,18 @@ extension RTMPConnection: RTMPSocketDelegate {
             }
             switch chunk.type {
             case .zero:
+                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
                 streamsmap[chunk.streamId] = message.streamId
             case .one:
+                logger.info("Chunk type one - gettubg \(streamsmap[chunk.streamId])")
                 if let streamId = streamsmap[chunk.streamId] {
                     message.streamId = streamId
                 }
             case .two:
+                logger.info("Chunk type two - ignoring")
                 break
             case .three:
+                logger.info("Chunk type three - ignoring")
                 break
             }
             message.execute(self)
