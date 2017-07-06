@@ -475,7 +475,7 @@ extension RTMPConnection: RTMPSocketDelegate {
                 "\nfragmented: \(chunk.fragmented)" +
                 "\nready?: \(chunk.ready)" +
                 "\ndescription: \(chunk.description)" +
-                "\nData bytes: \(chunk.data[1]) \(chunk.data[2]) \(chunk.data[3])" +
+                "\nData bytes: \(String(format: "%02hhx", chunk.data[1])) \(String(format: "%02hhx", chunk.data[2])) \(String(format: "%02hhx", chunk.data[3]))" +
                 "\nData count: \(chunk.data.count)")
 
         var position:Int = chunk.data.count
