@@ -462,13 +462,15 @@ extension RTMPConnection: RTMPSocketDelegate {
     }
 
     func listen(_ data:Data) {
-//        logger.info("Current chunk? \(currentChunk)")
+        logger.info("Current chunk? \(currentChunk)")
         guard let chunk:RTMPChunk = currentChunk ?? RTMPChunk(data, size: socket.chunkSizeC) else {
             socket.inputBuffer.append(data)
             return
         }
 
-        let byteinfo = data.subdata(in: 0..<8).hexEncodedString()
+        let count = data.count <= 48 ? data.count : 36
+
+        let byteinfo = data.subdata(in: 0..<count).hexEncodedString()
 
         logger.info("Chunk info - size: \(chunk.size)" +
                 "\ntype: \(chunk.type)" +
