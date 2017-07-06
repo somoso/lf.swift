@@ -522,21 +522,25 @@ extension RTMPConnection: RTMPSocketDelegate {
                 logger.info("Relistening - Position: \(position) data: \(data)")
                 listen(data.advanced(by: position))
             }
+            logger.info("Exiting")
             return
         }
 
         if (chunk.fragmented) {
+            logger.info("Chunk is fragment and dealt with, clearing")
             fragmentedChunks[chunk.streamId] = chunk
             currentChunk = nil
         } else {
+            logger.info("Rechunking because not fragmented")
             currentChunk = chunk.type == .three ? fragmentedChunks[chunk.streamId] : chunk
             fragmentedChunks.removeValue(forKey: chunk.streamId)
         }
 
-        logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
-
         if (0 < position && position < data.count) {
+            logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
             listen(data.advanced(by: position))
         }
+
+        logger.info("Exiting")
     }
 }
