@@ -513,7 +513,7 @@ extension RTMPConnection: RTMPSocketDelegate {
             fragmentedChunks.removeValue(forKey: chunk.streamId)
         }
 
-//        logger.info("Position: \(position) data: \(data.hexEncodedString())")
+        logger.info("Position: \(position) data: \(data.hexEncodedString())")
 
         if (position < data.count) {
             listen(data.advanced(by: position))
