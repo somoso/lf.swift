@@ -116,7 +116,8 @@ class AudioStreamPlayback {
                 fileStreamID,
                 UInt32(data.count),
                 bytes,
-                AudioFileStreamParseFlags(rawValue: 0)
+                //AudioFileStreamParseFlags(rawValue: 0)
+                    AudioFileStreamParseFlags.discontinuity
             )
             if (osData == noErr) {
                 //logger.info("Buffering is apparently fine")

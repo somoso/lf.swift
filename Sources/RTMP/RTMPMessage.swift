@@ -633,7 +633,7 @@ final class RTMPAudioMessage: RTMPMessage {
             return nil
         }
 
-        guard codec == FLVAudioCodec.mp3 else {
+        guard codec == FLVAudioCodec.mp3_8k || codec == FLVAudioCodec.mp3 else {
 //            logger.info("Returning nil - not mp3 codec")
             return nil
         }

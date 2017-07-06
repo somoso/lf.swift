@@ -573,7 +573,7 @@ open class RTMPStream: NetStream {
             metadata["videodatarate"] = mixer.videoIO.encoder.bitrate
         }
         if let _:AVCaptureInput = mixer.audioIO.input {
-            metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
+            metadata["audiocodecid"] = FLVAudioCodec.mp3_8k.rawValue
             metadata["audiodatarate"] = mixer.audioIO.encoder.bitrate
         }
         logger.info("metadata: \(metadata)")

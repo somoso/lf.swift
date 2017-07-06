@@ -119,7 +119,7 @@ enum FLVAudioCodec:UInt8 {
         case .speex:
             return false
         case .mp3_8k:
-            return false
+            return true
         case .unknown:
             return false
         }

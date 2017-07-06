@@ -10,7 +10,7 @@ protocol RTMPMuxerDelegate: class {
 // MARK: -
 final class RTMPMuxer {
     //static let aac:UInt8 = FLVAudioCodec.aac.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
-    static let mp3:UInt8 = FLVAudioCodec.mp3.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
+    static let mp3:UInt8 = FLVAudioCodec.mp3_8k.rawValue << 4 | FLVSoundRate.kHz44.rawValue << 2 | FLVSoundSize.snd16bit.rawValue << 1 | FLVSoundType.stereo.rawValue
 
     weak var delegate:RTMPMuxerDelegate? = nil
     fileprivate var configs:[Int:Data] = [:]
@@ -116,7 +116,7 @@ extension RTMPMuxer: MP4SamplerDelegate {
             metadata["audiocodecid"] = FLVAudioCodec.aac.rawValue
         }
         if let _:MP4AudioSampleEntryBox = reader.getBoxes(byName: "mp3").first as? MP4AudioSampleEntryBox {
-            metadata["audiocodecid"] = FLVAudioCodec.mp3.rawValue
+            metadata["audiocodecid"] = FLVAudioCodec.mp3_8k.rawValue
         }
         delegate?.metadata(metadata)
     }
