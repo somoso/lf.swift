@@ -516,7 +516,7 @@ extension RTMPConnection: RTMPSocketDelegate {
             message.execute(self)
             currentChunk = nil
             messages[chunk.streamId] = message
-            if (position < data.count) {
+            if (0 < position && position < data.count) {
                 logger.info("Relistening - Position: \(position) data: \(data.hexEncodedString())")
                 listen(data.advanced(by: position))
             }
@@ -533,7 +533,7 @@ extension RTMPConnection: RTMPSocketDelegate {
 
         logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
 
-        if (position < data.count) {
+        if (0 < position && position < data.count) {
             listen(data.advanced(by: position))
         }
     }
