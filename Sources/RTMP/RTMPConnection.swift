@@ -480,16 +480,16 @@ extension RTMPConnection: RTMPSocketDelegate {
 
         var position:Int = chunk.data.count
         if (4 <= chunk.data.count) && (chunk.data[1] == 0xFF) && (chunk.data[2] == 0xFF) && (chunk.data[3] == 0xFF) {
-//            logger.info("Inc. position by 4")
+            logger.info("Inc. position by 4")
             position += 4
         }
 
         if (currentChunk != nil) {
-//            logger.info("Appending current chunk to chunk")
+            logger.info("Appending current chunk to chunk")
             position = chunk.append(data, size: socket.chunkSizeC)
         }
         if (chunk.type == .two) {
-//            logger.info("Chunk is type two")
+            logger.info("Chunk is type two")
             position = chunk.append(data, message: messages[chunk.streamId])
         }
 
@@ -499,25 +499,25 @@ extension RTMPConnection: RTMPSocketDelegate {
             }
             switch chunk.type {
             case .zero:
-//                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
+                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
                 streamsmap[chunk.streamId] = message.streamId
             case .one:
-//                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
+                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
                 if let streamId = streamsmap[chunk.streamId] {
                     message.streamId = streamId
                 }
             case .two:
-//                logger.info("Chunk type two - ignoring")
+                logger.info("Chunk type two - ignoring")
                 break
             case .three:
-//                logger.info("Chunk type three - ignoring")
+                logger.info("Chunk type three - ignoring")
                 break
             }
             message.execute(self)
             currentChunk = nil
             messages[chunk.streamId] = message
             if (0 < position && position < data.count) {
-//                logger.info("Relistening - Position: \(position) data: \(data)")
+                logger.info("Relistening - Position: \(position) data: \(data)")
                 listen(data.advanced(by: position))
             }
             return
@@ -531,7 +531,7 @@ extension RTMPConnection: RTMPSocketDelegate {
             fragmentedChunks.removeValue(forKey: chunk.streamId)
         }
 
-//        logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
+        logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
 
         if (0 < position && position < data.count) {
             listen(data.advanced(by: position))
