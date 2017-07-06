@@ -99,7 +99,7 @@ final class RTMPSocket: NetSocket, RTMPSocketCompatible {
     }
 
     override func listen() {
-        logger.info("Calling listen")
+//        logger.info("Calling listen")
         switch readyState {
         case .versionSent:
             if (inputBuffer.count < RTMPHandshake.sigSize + 1) {
@@ -109,7 +109,7 @@ final class RTMPSocket: NetSocket, RTMPSocketCompatible {
             inputBuffer.removeSubrange(0...RTMPHandshake.sigSize)
             readyState = .ackSent
             if (RTMPHandshake.sigSize <= inputBuffer.count) {
-                logger.info("RTMP Handshake sigSize: \(RTMPHandshake.sigSize) - IB Count: \(inputBuffer.count)")
+//                logger.info("RTMP Handshake sigSize: \(RTMPHandshake.sigSize) - IB Count: \(inputBuffer.count)")
                 listen()
             }
         case .ackSent:
