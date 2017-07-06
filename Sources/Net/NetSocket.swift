@@ -164,6 +164,7 @@ public class NetSocket: NSObject {
             return
         }
         let length:Int = inputStream.read(buffer, maxLength: windowSizeC)
+        logger.info("IS Length: \(length)")
         if 0 < length {
             totalBytesIn += Int64(length)
             inputBuffer.append(buffer, count: length)
