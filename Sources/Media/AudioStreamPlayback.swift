@@ -262,7 +262,9 @@ class AudioStreamPlayback {
         }
         var data:AudioStreamBasicDescription = AudioStreamBasicDescription()
         var size:UInt32 = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
-        guard AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_DataFormat, &size, &data) == noErr else {
+        let status: OSStatus = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_DataFormat, &size, &data);
+        guard status == noErr else {
+            logger.warning("Error: \(status)")
             logger.warning("kAudioFileStreamProperty_DataFormat")
             return nil
         }
@@ -275,12 +277,17 @@ class AudioStreamPlayback {
         }
         var size:UInt32 = 0
         var writable:DarwinBoolean = true
-        guard AudioFileStreamGetPropertyInfo(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &writable) == noErr else {
+        let status1 = AudioFileStreamGetPropertyInfo(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &writable)
+        guard status1 == noErr else {
+            logger.warning("Error: \(status1)")
             logger.warning("info kAudioFileStreamProperty_MagicCookieData")
             return nil
         }
+
         var data:[UInt8] = [UInt8](repeating: 0, count: Int(size))
-        guard AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &data) == noErr else {
+        let status2 = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &data)
+        guard status2 == noErr else {
+            logger.warning("Error: \(status2)")
             logger.warning("kAudioFileStreamProperty_MagicCookieData")
             return nil
         }
