@@ -235,6 +235,7 @@ class AudioStreamPlayback {
     }
 
     final func onAudioPacketsForFileStream(_ inNumberBytes:UInt32, _ inNumberPackets:UInt32, _ inInputData:UnsafeRawPointer, _ inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) {
+        logger.info("Appending \(inNumberPackets) to buffer")
         for i in 0..<Int(inNumberPackets) {
             appendBuffer(inInputData, inPacketDescription: &inPacketDescriptions[i])
         }
@@ -243,10 +244,13 @@ class AudioStreamPlayback {
     final func onPropertyChangeForFileStream(_ inAudioFileStream:AudioFileStreamID, _ inPropertyID:AudioFileStreamPropertyID, _ ioFlags:UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
         switch inPropertyID {
         case kAudioFileStreamProperty_ReadyToProducePackets:
+            logger.info("Ready to produce packets")
             break
         case kAudioFileStreamProperty_DataFormat:
+            logger.info("Getting format description")
             formatDescription = getFormatDescriptionForFileStream()
         default:
+            logger.info("Default")
             break
         }
     }
