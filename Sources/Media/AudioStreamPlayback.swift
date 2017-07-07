@@ -208,9 +208,9 @@ class AudioStreamPlayback {
                 logger.warning("Failed in AudioQueueNewOutput")
             }
         }
-        if let cookie:[UInt8] = getMagicCookieForFileStream() {
-            let _:Bool = setMagicCookieForQueue(cookie)
-        }
+//        if let cookie:[UInt8] = getMagicCookieForFileStream() {
+//            let _:Bool = setMagicCookieForQueue(cookie)
+//        }
         soundTransform.setParameter(queue!)
         for _ in 0..<numberOfBuffers {
             var buffer:AudioQueueBufferRef? = nil
