@@ -194,7 +194,7 @@ class AudioStreamPlayback {
         var queue:AudioQueueRef? = nil
         DispatchQueue.global(qos: .background).sync {
             self.runloop = CFRunLoopGetCurrent()
-            AudioQueueNewOutput(
+            let status = AudioQueueNewOutput(
                 &self.formatDescription!,
                 self.outputCallback,
                 unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
@@ -202,6 +202,11 @@ class AudioStreamPlayback {
                 CFRunLoopMode.commonModes.rawValue,
                 0,
                 &queue)
+
+            if (status != noErr) {
+                printOSStatus(status)
+                logger.warning("Failed in AudioQueueNewOutput")
+            }
         }
         if let cookie:[UInt8] = getMagicCookieForFileStream() {
             let _:Bool = setMagicCookieForQueue(cookie)
@@ -250,6 +255,7 @@ class AudioStreamPlayback {
         var status:OSStatus = noErr
         status = AudioQueueSetProperty(queue, kAudioQueueProperty_MagicCookie, inData, UInt32(inData.count))
         guard status == noErr else {
+            printOSStatus(status)
             logger.warning("status \(status)")
             return false
         }
@@ -264,11 +270,43 @@ class AudioStreamPlayback {
         var size:UInt32 = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
         let status: OSStatus = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_DataFormat, &size, &data);
         guard status == noErr else {
-            logger.warning("Error: \(status)")
+            printOSStatus(status)
             logger.warning("kAudioFileStreamProperty_DataFormat")
             return nil
         }
         return data
+    }
+
+    func printOSStatus(_ status: OSStatus) {
+        logger.warning("Error: \(status)")
+        switch (status) {
+        case kAudioFileStreamError_UnsupportedFileType:
+            logger.warning("Unsupported file type")
+        case kAudioFileStreamError_UnsupportedDataFormat:
+            logger.warning("Unsupported data format")
+        case kAudioFileStreamError_UnsupportedProperty:
+            logger.warning("Unsupported property")
+        case kAudioFileStreamError_BadPropertySize:
+            logger.warning("Bad property size")
+        case kAudioFileStreamError_NotOptimized:
+            logger.warning("Not optimised")
+        case kAudioFileStreamError_InvalidPacketOffset:
+            logger.warning("Invalid packet offset")
+        case kAudioFileStreamError_InvalidFile:
+            logger.warning("Invalid file")
+        case kAudioFileStreamError_ValueUnknown:
+            logger.warning("Value unknown")
+        case kAudioFileStreamError_DataUnavailable:
+            logger.warning("Data unavailable")
+        case kAudioFileStreamError_IllegalOperation:
+            logger.warning("Illegal operation")
+        case kAudioFileStreamError_UnspecifiedError:
+            logger.warning("Unspecified error")
+        case kAudioFileStreamError_DiscontinuityCantRecover:
+            logger.warning("Cannot recover from disconuity")
+        default:
+            logger.warning("Unsure")
+        }
     }
 
     func getMagicCookieForFileStream() -> [UInt8]? {
@@ -279,7 +317,8 @@ class AudioStreamPlayback {
         var writable:DarwinBoolean = true
         let status1 = AudioFileStreamGetPropertyInfo(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &writable)
         guard status1 == noErr else {
-            logger.warning("Error: \(status1)")
+            printOSStatus(status1)
+
             logger.warning("info kAudioFileStreamProperty_MagicCookieData")
             return nil
         }
@@ -287,7 +326,8 @@ class AudioStreamPlayback {
         var data:[UInt8] = [UInt8](repeating: 0, count: Int(size))
         let status2 = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &data)
         guard status2 == noErr else {
-            logger.warning("Error: \(status2)")
+            printOSStatus(status2)
+
             logger.warning("kAudioFileStreamProperty_MagicCookieData")
             return nil
         }
