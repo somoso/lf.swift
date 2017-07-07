@@ -89,6 +89,7 @@ class AudioStreamPlayback {
         inNumberPackets:UInt32,
         inInputData:UnsafeRawPointer,
         inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) -> Void in
+        logger.info("On PacketsProc")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.initializeForAudioQueue()
         playback.onAudioPacketsForFileStream(inNumberBytes, inNumberPackets, inInputData, inPacketDescriptions)
@@ -99,6 +100,7 @@ class AudioStreamPlayback {
         inAudioFileStream:AudioFileStreamID,
         inPropertyID:AudioFileStreamPropertyID,
         ioFlags:UnsafeMutablePointer<AudioFileStreamPropertyFlags>) -> Void in
+        logger.info("On PropertyListenerProc")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.onPropertyChangeForFileStream(inAudioFileStream, inPropertyID, ioFlags)
     }
@@ -107,6 +109,7 @@ class AudioStreamPlayback {
         //logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
 
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
+            logger.warning("FileStreamId is null :/")
             return
         }
 
