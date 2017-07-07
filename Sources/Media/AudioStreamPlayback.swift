@@ -32,17 +32,17 @@ class AudioStreamPlayback {
                 return
             }
             var fileStreamID:OpaquePointer? = nil
-            let answer = AudioFileStreamOpen(
+            let status = AudioFileStreamOpen(
                     unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
                     propertyListenerProc,
                     packetsProc,
                     fileTypeHint,
                     &fileStreamID)
-            if answer == noErr {
+            if status == noErr {
                 //logger.info("Setting new fileStreamID")
                 self.fileStreamID = fileStreamID
             } else {
-                logger.error("AudioFileStreamOpen failed: \(answer)")
+                printOSStatus(status)
             }
         }
     }
@@ -53,8 +53,14 @@ class AudioStreamPlayback {
             guard let oldValue:AudioQueueRef = oldValue else {
                 return
             }
-            AudioQueueStop(oldValue, true)
-            AudioQueueDispose(oldValue, true)
+            var status = AudioQueueStop(oldValue, true)
+            if (status != noErr) {
+                printOSStatus(status)
+            }
+            status = AudioQueueDispose(oldValue, true)
+            if (status != noErr) {
+                printOSStatus(status)
+            }
         }
     }
     fileprivate var inuse:[Bool] = []
@@ -68,7 +74,10 @@ class AudioStreamPlayback {
             guard let oldValue:AudioFileStreamID = oldValue else {
                 return
             }
-            AudioFileStreamClose(oldValue)
+            let status = AudioFileStreamClose(oldValue)
+            if (status != noErr) {
+                printOSStatus(status)
+            }
         }
     }
     fileprivate var isPacketDescriptionsFull:Bool {
@@ -79,6 +88,7 @@ class AudioStreamPlayback {
         inUserData: UnsafeMutableRawPointer?,
         inAQ: AudioQueueRef,
         inBuffer:AudioQueueBufferRef) -> Void in
+        logger.info("Getting output callback fo dat MP3")
         let playback:AudioStreamPlayback = unsafeBitCast(inUserData, to: AudioStreamPlayback.self)
         playback.onOutputForQueue(inAQ, inBuffer)
     }
@@ -226,7 +236,9 @@ class AudioStreamPlayback {
     }
 
     final func onOutputForQueue(_ inAQ: AudioQueueRef, _ inBuffer:AudioQueueBufferRef) {
+        logger.info("Outputting buffer contents - getting index of \(inBuffer)")
         guard let i:Int = buffers.index(of: inBuffer) else {
+            logger.error("Failed to get buffer")
             return
         }
         objc_sync_enter(inuse)
