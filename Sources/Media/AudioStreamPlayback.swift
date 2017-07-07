@@ -211,8 +211,8 @@ class AudioStreamPlayback {
                 &self.formatDescription!,
                 self.outputCallback,
                 unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
-                self.runloop,
-                CFRunLoopMode.commonModes.rawValue,
+                nil,
+                nil,
                 0,
                 &queue)
 
