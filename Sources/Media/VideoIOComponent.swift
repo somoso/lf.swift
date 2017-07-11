@@ -359,6 +359,8 @@ extension VideoIOComponent: VideoDecoderDelegate {
 extension VideoIOComponent: ClockedQueueDelegate {
     // MARK: ClockedQueueDelegate
     func queue(_ buffer: CMSampleBuffer) {
+        logger.info("Attempting to start audio queue - mixer not nil? \(mixer != nil)")
+        //AudioStreamPlayback call
         mixer?.audioIO.playback.startQueueIfNeed()
         drawable?.draw(image: CIImage(cvPixelBuffer: buffer.imageBuffer!))
     }

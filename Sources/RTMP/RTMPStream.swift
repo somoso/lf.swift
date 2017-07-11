@@ -224,8 +224,16 @@ open class RTMPStream: NetStream {
     open fileprivate(set) var objectEncoding:UInt8 = RTMPConnection.defaultObjectEncoding
     open fileprivate(set) dynamic var currentFPS:UInt16 = 0
     open var soundTransform:SoundTransform {
-        get { return mixer.audioIO.playback.soundTransform }
-        set { mixer.audioIO.playback.soundTransform = newValue }
+        get {
+            logger.info("Getting Audio Stream Playback soundTransform")
+            //AudioStreamPlayback call
+            return mixer.audioIO.playback.soundTransform
+        }
+        set {
+            logger.info("Setting Audio Stream Playback soundTransform")
+            //AudioStreamPlayback call
+            mixer.audioIO.playback.soundTransform = newValue
+        }
     }
 
     var id:UInt32 = RTMPStream.defaultID
@@ -238,6 +246,8 @@ open class RTMPStream: NetStream {
                 info.clear()
                 qosDelagate?.clear()
             case .playing:
+                logger.info("Start playing")
+                //AudioStreamPlayback call
                 mixer.audioIO.playback.startRunning()
                 mixer.startPlaying()
             case .publishing:
