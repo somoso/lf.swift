@@ -104,9 +104,7 @@ class AudioStreamPlayback {
         logger.info("On PacketsProc - # of Bytes:\(inNumberBytes)" +
                 "\n# of Packets: \(inNumberPackets)" +
                 "\nInClientData: \(inClientData)" +
-                "\nInInputData: \(inInputData)" +
-                "\nConverter error: \(kAudioQueueProperty_ConverterError)" +
-                "\nIs Running: \(kAudioQueueProperty_IsRunning)")
+                "\nInInputData: \(inInputData)")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.initializeForAudioQueue()
         playback.onAudioPacketsForFileStream(inNumberBytes, inNumberPackets, inInputData, inPacketDescriptions)
