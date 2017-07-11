@@ -89,8 +89,11 @@ final class AudioIOComponent: IOComponent {
 extension AudioIOComponent: AVCaptureAudioDataOutputSampleBufferDelegate {
     // MARK: AVCaptureAudioDataOutputSampleBufferDelegate
     func captureOutput(_ captureOutput:AVCaptureOutput!, didOutputSampleBuffer sampleBuffer:CMSampleBuffer!, from connection:AVCaptureConnection!) {
-        mixer?.recorder.appendSampleBuffer(sampleBuffer, mediaType: AVMediaTypeAudio)
-        encoder.captureOutput(captureOutput, didOutputSampleBuffer: sampleBuffer, from: connection)
+        logger.info("Attempting to start audio queue - mixer not nil? \(mixer != nil)")
+        //AudioStreamPlayback call
+        mixer?.audioIO.playback.startQueueIfNeed()
+//        mixer?.recorder.appendSampleBuffer(sampleBuffer, mediaType: AVMediaTypeAudio)
+//        encoder.captureOutput(captureOutput, didOutputSampleBuffer: sampleBuffer, from: connection)
     }
 }
 #endif
