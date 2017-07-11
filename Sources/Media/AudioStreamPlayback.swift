@@ -197,6 +197,7 @@ class AudioStreamPlayback {
             return
         }
         inuse[current] = true
+        logger.info("Filled buffer \(current)")
         let buffer:AudioQueueBufferRef = buffers[current]
         buffer.pointee.mAudioDataByteSize = filledBytes
         logger.info("Enqueue buffer with \(filledBytes) bytes")
@@ -269,6 +270,7 @@ class AudioStreamPlayback {
         objc_sync_enter(inuse)
         inuse[i] = false
         objc_sync_exit(inuse)
+        logger.info("Freed buffer \(i)")
     }
 
     final func onAudioPacketsForFileStream(_ inNumberBytes:UInt32, _ inNumberPackets:UInt32, _ inInputData:UnsafeRawPointer, _ inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) {
