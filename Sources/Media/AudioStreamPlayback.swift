@@ -63,7 +63,7 @@ class AudioStreamPlayback {
             if (status != noErr) {
                 printOSStatus(status)
             }
-            startQueueIfNeed()
+
         }
     }
     fileprivate var inuse:[Bool] = []
@@ -257,6 +257,7 @@ class AudioStreamPlayback {
             }
         }
         self.queue = queue
+        startQueueIfNeed()
     }
 
     final func onOutputForQueue(_ inAQ: AudioQueueRef, _ inBuffer:AudioQueueBufferRef) {
