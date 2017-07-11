@@ -200,7 +200,6 @@ class AudioStreamPlayback {
             logger.warning("AudioQueueEnqueueBuffer")
             return
         }
-        AudioQueueFlush(queue)
     }
 
     func startQueueIfNeed() {
