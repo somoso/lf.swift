@@ -248,6 +248,14 @@ class AudioStreamPlayback {
             }
         }
         self.queue = queue
+        var isRunning = OSStatus()
+        var converterError = OSStatus()
+        var varSize = UInt32(MemoryLayout<OSStatus>.size)
+        if (queue != nil) {
+            AudioQueueGetProperty(queue!, kAudioQueueProperty_IsRunning, &isRunning, &varSize)
+            AudioQueueGetProperty(queue!, kAudioQueueProperty_ConverterError, &converterError, &varSize)
+            logger.info("Is running? \(isRunning)\nConverter errors? \(converterError)")
+        }
     }
 
     final func onOutputForQueue(_ inAQ: AudioQueueRef, _ inBuffer:AudioQueueBufferRef) {
