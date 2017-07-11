@@ -52,6 +52,7 @@ class AudioStreamPlayback {
     fileprivate var queue:AudioQueueRef? = nil {
         didSet {
             guard let oldValue:AudioQueueRef = oldValue else {
+                logging.info("Queue: Old value: \(oldValue) - New Queue: \(queue)")
                 return
             }
             var status = AudioQueueStop(oldValue, true)
