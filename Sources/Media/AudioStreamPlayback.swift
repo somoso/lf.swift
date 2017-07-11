@@ -205,6 +205,7 @@ class AudioStreamPlayback {
             return
         }
         var queue:AudioQueueRef? = nil
+        logger.info("Format description: \(formatDescription)")
         DispatchQueue.global(qos: .background).sync {
             self.runloop = CFRunLoopGetCurrent()
             let status = AudioQueueNewOutput(
