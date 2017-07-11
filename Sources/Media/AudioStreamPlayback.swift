@@ -31,6 +31,7 @@ class AudioStreamPlayback {
                 logger.info("Values are the same, skipping")
                 return
             }
+            logger.info("File types are not the same, resetting")
             var fileStreamID:OpaquePointer? = nil
             let status = AudioFileStreamOpen(
                     unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
