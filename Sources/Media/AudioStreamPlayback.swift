@@ -204,7 +204,7 @@ class AudioStreamPlayback {
 
     func startQueueIfNeed() {
         guard let queue:AudioQueueRef = queue, !started else {
-            logger.error("Starting queue failed\nQueue: \(queue)\nStarted? \(started)")
+            logger.error("Starting queue failed\nQueue: \(self.queue)\nStarted? \(self.started)")
             return
         }
         logger.info("Starting queue")
