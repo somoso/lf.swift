@@ -100,7 +100,10 @@ class AudioStreamPlayback {
         inNumberPackets:UInt32,
         inInputData:UnsafeRawPointer,
         inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) -> Void in
-        logger.info("On PacketsProc")
+        logger.info("On PacketsProc - # of Bytes:\(inNumberBytes)" +
+                "\n# of Packets: \(inNumberPackets)" +
+                "\nInClientData: \(inClientData)" +
+                "\nInInputData: \(inInputData)")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.initializeForAudioQueue()
         playback.onAudioPacketsForFileStream(inNumberBytes, inNumberPackets, inInputData, inPacketDescriptions)
@@ -148,10 +151,13 @@ class AudioStreamPlayback {
     func appendBuffer(_ inInputData:UnsafeRawPointer, inPacketDescription:inout AudioStreamPacketDescription) {
         let offset:Int = Int(inPacketDescription.mStartOffset)
         let packetSize:UInt32 = inPacketDescription.mDataByteSize
-        if (isBufferFull(packetSize) || isPacketDescriptionsFull) {
+        let bufferFull = isBufferFull(packetSize)
+        logger.info("Offset: \(offset)\nPacket Size: \(packetSize)\nIs Buffer Full? \(bufferFull)\nPacket Description Full: \(isPacketDescriptionsFull)")
+        if (bufferFull || isPacketDescriptionsFull) {
             enqueueBuffer()
             rotateBuffer()
         }
+        logger.info("We survived the bufferpocalypse")
         let buffer:AudioQueueBufferRef = buffers[current]
         memcpy(buffer.pointee.mAudioData.advanced(by: Int(filledBytes)), inInputData.advanced(by: offset), Int(packetSize))
         inPacketDescription.mStartOffset = Int64(filledBytes)
@@ -173,6 +179,7 @@ class AudioStreamPlayback {
             objc_sync_exit(inuse)
         }
         while(loop)
+        logger.info("Rotated buffers")
     }
 
     func enqueueBuffer() {
@@ -182,11 +189,14 @@ class AudioStreamPlayback {
         inuse[current] = true
         let buffer:AudioQueueBufferRef = buffers[current]
         buffer.pointee.mAudioDataByteSize = filledBytes
-        guard AudioQueueEnqueueBuffer(
-            queue,
-            buffer,
-            UInt32(packetDescriptions.count),
-            &packetDescriptions) == noErr else {
+        logger.info("Enqueue buffer with \(filledBytes) bytes")
+        let enqueueBuffer = AudioQueueEnqueueBuffer(
+                queue,
+                buffer,
+                UInt32(packetDescriptions.count),
+                &packetDescriptions)
+        guard enqueueBuffer == noErr else {
+            printOSStatus(enqueueBuffer)
             logger.warning("AudioQueueEnqueueBuffer")
             return
         }
@@ -197,6 +207,7 @@ class AudioStreamPlayback {
         guard let queue:AudioQueueRef = queue, !started else {
             return
         }
+        logger.info("Starting queue")
         started = true
         AudioQueuePrime(queue, 0, nil)
         AudioQueueStart(queue, nil)
