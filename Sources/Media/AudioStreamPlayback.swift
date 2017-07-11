@@ -51,8 +51,8 @@ class AudioStreamPlayback {
     fileprivate var bufferSize:UInt32 = AudioStreamPlayback.defaultBufferSize
     fileprivate var queue:AudioQueueRef? = nil {
         didSet {
+            logger.info("Queue: Old value: \(oldValue) - New Queue: \(queue)")
             guard let oldValue:AudioQueueRef = oldValue else {
-                logging.info("Queue: Old value: \(oldValue) - New Queue: \(queue)")
                 return
             }
             var status = AudioQueueStop(oldValue, true)
