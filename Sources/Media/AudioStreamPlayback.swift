@@ -183,6 +183,7 @@ class AudioStreamPlayback {
         filledBytes = 0
         packetDescriptions.removeAll()
         var loop:Bool = true
+        logger.info("Searching for buffer \(current)")
         repeat {
             objc_sync_enter(inuse)
             loop = inuse[current]
@@ -267,6 +268,7 @@ class AudioStreamPlayback {
             logger.error("Failed to get buffer")
             return
         }
+        logger.info("Freeing buffer \(i)")
         objc_sync_enter(inuse)
         inuse[i] = false
         objc_sync_exit(inuse)
