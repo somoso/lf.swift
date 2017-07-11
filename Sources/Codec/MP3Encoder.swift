@@ -98,9 +98,9 @@ final class MP3Encoder: NSObject {
                 _inDestinationFormat!.mFormatID = kAudioFormatMPEGLayer3
                 _inDestinationFormat!.mFormatFlags = 0
                 _inDestinationFormat!.mBytesPerPacket = 0
-                _inDestinationFormat!.mFramesPerPacket = MP3Encoder.framesPerPacket
+                _inDestinationFormat!.mFramesPerPacket = 0
                 _inDestinationFormat!.mBytesPerFrame = 0
-                _inDestinationFormat!.mChannelsPerFrame = (channels == 0) ? inSourceFormat!.mChannelsPerFrame : channels
+                _inDestinationFormat!.mChannelsPerFrame = (channels == 0) ? 1 : 2
                 _inDestinationFormat!.mBitsPerChannel = 0
                 _inDestinationFormat!.mReserved = 0
 
