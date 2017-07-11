@@ -62,6 +62,7 @@ class AudioStreamPlayback {
             if (status != noErr) {
                 printOSStatus(status)
             }
+            startQueueIfNeed()
         }
     }
     fileprivate var inuse:[Bool] = []
@@ -103,7 +104,9 @@ class AudioStreamPlayback {
         logger.info("On PacketsProc - # of Bytes:\(inNumberBytes)" +
                 "\n# of Packets: \(inNumberPackets)" +
                 "\nInClientData: \(inClientData)" +
-                "\nInInputData: \(inInputData)")
+                "\nInInputData: \(inInputData)" +
+                "\nConverter error: \(kAudioQueueProperty_ConverterError)" +
+                "\nIs Running: \(kAudioQueueProperty_IsRunning)")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.initializeForAudioQueue()
         playback.onAudioPacketsForFileStream(inNumberBytes, inNumberPackets, inInputData, inPacketDescriptions)
