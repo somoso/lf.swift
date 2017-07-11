@@ -101,7 +101,7 @@ extension AVMixer {
     final func startPlaying() {
         logger.info("Starting audio and video playback")
         //AudioStreamPlayback call
-        audioIO.playback.startRunning()
+        audioIO.playback.startQueueIfNeed()
         videoIO.queue.startRunning()
     }
     final func stopPlaying() {
