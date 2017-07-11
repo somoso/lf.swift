@@ -623,7 +623,14 @@ final class RTMPAudioMessage: RTMPMessage {
 //                "\nsoundData: \(soundData.hexEncodedString())" +
 //                "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
 //                "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
-        stream.mixer.audioIO.playback.parseBytes(soundData.advanced(by: 1))
+        //stream.mixer.audioIO.playback.parseBytes(soundData.advanced(by: 1))
+        if let audioPlayer = try? AVAudioPlayer(data: soundData, fileTypeHint: "mp3") {
+            if (audioPlayer.prepareToPlay()) {
+                audioPlayer.play()
+            }
+        }
+
+
     }
 
     func createAudioSpecificConfig() -> AudioSpecificConfig? {
