@@ -22,6 +22,7 @@ final class ClockedQueue {
 
     func enqueue(_ buffer:CMSampleBuffer) {
         lockQueue.async {
+            logger.info("Enqueue - Buffer duration: \(buffer.duration.seconds), Buffer: \(buffer), isReady? \(self.isReady), duration: \(self.duration), bufferTime: \(self.bufferTime)")
             self.duration += buffer.duration.seconds
             self.buffers.append(buffer)
             if (!self.isReady) {
@@ -39,16 +40,20 @@ extension ClockedQueue: Runnable {
 
     final func startRunning() {
         guard !running else {
+            logger.info("Already running")
             return
         }
+        logger.info("Start running")
         isReady = false
         driver.startRunning()
     }
 
     final func stopRunning() {
         guard running else {
+            logger.info("Already stopped")
             return
         }
+        logger.info("Stop running")
         isReady = false
         duration = 0
         buffers.removeAll()
@@ -59,6 +64,7 @@ extension ClockedQueue: Runnable {
 extension ClockedQueue: TimerDriverDelegate {
     // MARK: TimerDriverDelegate
     func tick(_ driver:TimerDriver) {
+        logger.info("First sample: \(buffers.first) - isReady? \(isReady)")
         guard let first:CMSampleBuffer = buffers.first, isReady else {
             return
         }
