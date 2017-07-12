@@ -76,8 +76,8 @@ enum SamplingFrequency: UInt8 {
     case hz96000 = 0
     case hz88200 = 1
     case hz64000 = 2
-    case hz48000 = 3
-    case hz44100 = 4
+    case hz48000 = 4
+    case hz44100 = 3
     case hz32000 = 5
     case hz24000 = 6
     case hz22050 = 7
