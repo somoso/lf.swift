@@ -332,6 +332,10 @@ open class RTMPStream: NetStream {
         }
     }
 
+    open func setSampleBufferLayer(layer: AVSampleBufferDisplayLayer) {
+        mixer.videoIO.vidLayer = layer
+    }
+
     open func play(_ arguments:Any?...) {
 //        logger.info("Playing, args: \(arguments)")
         lockQueue.async {
