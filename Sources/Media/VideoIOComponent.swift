@@ -12,6 +12,7 @@ final class VideoIOComponent: IOComponent {
     }
     lazy var encoder:H264Encoder = H264Encoder()
     lazy var decoder:H264Decoder = H264Decoder()
+    var vidLayer: AVSampleBufferDisplayLayer = AVSampleBufferDisplayLayer()
     lazy var queue:ClockedQueue = {
         let queue:ClockedQueue = ClockedQueue()
         queue.delegate = self
@@ -352,7 +353,8 @@ extension VideoIOComponent: AVCaptureVideoDataOutputSampleBufferDelegate {
 extension VideoIOComponent: VideoDecoderDelegate {
     // MARK: VideoDecoderDelegate
     func sampleOutput(video sampleBuffer:CMSampleBuffer) {
-        queue.enqueue(sampleBuffer)
+        //queue.enqueue(sampleBuffer)
+        vidLayer.enqueue(sampleBuffer)
     }
 }
 
