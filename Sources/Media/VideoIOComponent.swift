@@ -13,11 +13,6 @@ final class VideoIOComponent: IOComponent {
     lazy var encoder:H264Encoder = H264Encoder()
     lazy var decoder:H264Decoder = H264Decoder()
     var vidLayer: AVSampleBufferDisplayLayer?
-    lazy var queue:ClockedQueue = {
-        let queue:ClockedQueue = ClockedQueue()
-        queue.delegate = self
-        return queue
-    }()
     var effects:[VisualEffect] = []
 
 #if os(iOS) || os(macOS)
@@ -353,17 +348,7 @@ extension VideoIOComponent: AVCaptureVideoDataOutputSampleBufferDelegate {
 extension VideoIOComponent: VideoDecoderDelegate {
     // MARK: VideoDecoderDelegate
     func sampleOutput(video sampleBuffer:CMSampleBuffer) {
-        //queue.enqueue(sampleBuffer)
         vidLayer?.enqueue(sampleBuffer)
     }
 }
 
-extension VideoIOComponent: ClockedQueueDelegate {
-    // MARK: ClockedQueueDelegate
-    func queue(_ buffer: CMSampleBuffer) {
-//        logger.info("Attempting to start audio queue - mixer not nil? \(mixer != nil)")
-        //AudioStreamPlayback call
-        mixer?.audioIO.playback.startQueueIfNeed()
-        drawable?.draw(image: CIImage(cvPixelBuffer: buffer.imageBuffer!))
-    }
-}
