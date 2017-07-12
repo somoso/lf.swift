@@ -225,12 +225,12 @@ open class RTMPStream: NetStream {
     open fileprivate(set) dynamic var currentFPS:UInt16 = 0
     open var soundTransform:SoundTransform {
         get {
-            logger.info("Getting Audio Stream Playback soundTransform")
+//            logger.info("Getting Audio Stream Playback soundTransform")
             //AudioStreamPlayback call
             return mixer.audioIO.playback.soundTransform
         }
         set {
-            logger.info("Setting Audio Stream Playback soundTransform")
+//            logger.info("Setting Audio Stream Playback soundTransform")
             //AudioStreamPlayback call
             mixer.audioIO.playback.soundTransform = newValue
         }
@@ -316,7 +316,7 @@ open class RTMPStream: NetStream {
     }
 
     open func receiveVideo(flag:Bool) {
-        logger.info("Receiving video? \(flag)")
+//        logger.info("Receiving video? \(flag)")
         lockQueue.async {
             guard self.readyState == .playing else {
                 return
@@ -333,12 +333,12 @@ open class RTMPStream: NetStream {
     }
 
     open func play(_ arguments:Any?...) {
-        logger.info("Playing, args: \(arguments)")
+//        logger.info("Playing, args: \(arguments)")
         lockQueue.async {
             guard let name:String = arguments.first as? String else {
                 switch self.readyState {
                 case .play, .playing:
-                    logger.info("State play/playing - stopping")
+//                    logger.info("State play/playing - stopping")
                     self.rtmpConnection.socket.doOutput(chunk: RTMPChunk(
                         type: .zero,
                         streamId: RTMPChunk.StreamID.audio.rawValue,
@@ -352,7 +352,7 @@ open class RTMPStream: NetStream {
                     )), locked: nil)
                     self.info.resourceName = nil
                 default:
-                    logger.info("Default state, breaking")
+//                    logger.info("Default state, breaking")
                     break
                 }
                 return
@@ -361,7 +361,7 @@ open class RTMPStream: NetStream {
                 usleep(100)
             }
             self.info.resourceName = name
-            logger.info("Sending play cmd, resname: \(self.info.resourceName)")
+//            logger.info("Sending play cmd, resname: \(self.info.resourceName)")
             self.rtmpConnection.socket.doOutput(chunk: RTMPChunk(message: RTMPCommandMessage(
                 streamId: self.id,
                 transactionId: 0,

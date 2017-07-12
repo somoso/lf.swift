@@ -612,20 +612,20 @@ final class RTMPAudioMessage: RTMPMessage {
             return
         }
         if let config:AudioSpecificConfig = createAudioSpecificConfig() {
-            logger.info("Setting Audio Stream Playback configuration & file type hint")
+//            logger.info("Setting Audio Stream Playback configuration & file type hint")
             //AudioStreamPlayback call
             stream.mixer.audioIO.playback.fileTypeHint = kAudioFileMP3Type
             stream.mixer.audioIO.playback.config = config
 //            return
         }
         self.config = stream.mixer.audioIO.playback.config
-        logger.info("Executing stream - " +
-                "codec: \(codec)\n" +
-                "config: \(config)" +
-                "\nsoundData: \(soundData.hexEncodedString())" +
-                "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
-                "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
-        logger.info("Sending bytes to AudioStreamPlayback object")
+//        logger.info("Executing stream - " +
+//                "codec: \(codec)\n" +
+//                "config: \(config)" +
+//                "\nsoundData: \(soundData.hexEncodedString())" +
+//                "\nfileTypeHint: \(stream.mixer.audioIO.playback.fileTypeHint)" +
+//                "\nstreamConfig: \(stream.mixer.audioIO.playback.config)")
+//        logger.info("Sending bytes to AudioStreamPlayback object")
         //AudioStreamPlayback call
         stream.mixer.audioIO.playback.parseBytes(soundData.advanced(by: 1))
 //        if let audioPlayer = try? AVAudioPlayer(data: soundData, fileTypeHint: "mp3") {

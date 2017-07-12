@@ -50,12 +50,12 @@ class AudioStreamPlayback {
     var formatDescription:AudioStreamBasicDescription? = nil
     var fileTypeHint:AudioFileTypeID? = nil {
         didSet {
-            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
+//            logger.info("File Type Hint: \(fileTypeHint) - \(oldValue)")
             guard let fileTypeHint:AudioFileTypeID = fileTypeHint, fileTypeHint != oldValue else {
-                logger.info("Values are the same, skipping")
+//                logger.info("Values are the same, skipping")
                 return
             }
-            logger.info("File types are not the same, resetting")
+//            logger.info("File types are not the same, resetting")
             var fileStreamID:OpaquePointer? = nil
             let status = AudioFileStreamOpen(
                     unsafeBitCast(self, to: UnsafeMutableRawPointer.self),
@@ -75,7 +75,7 @@ class AudioStreamPlayback {
     fileprivate var bufferSize:UInt32 = AudioStreamPlayback.defaultBufferSize
     fileprivate var queue:AudioQueueRef? = nil {
         didSet {
-            logger.info("Queue: Old value: \(oldValue) - New Queue: \(queue)")
+//            logger.info("Queue: Old value: \(oldValue) - New Queue: \(queue)")
             guard let oldValue:AudioQueueRef = oldValue else {
                 return
             }
@@ -115,7 +115,7 @@ class AudioStreamPlayback {
         inUserData: UnsafeMutableRawPointer?,
         inAQ: AudioQueueRef,
         inBuffer:AudioQueueBufferRef) -> Void in
-        logger.info("Getting output callback fo dat MP3")
+//        logger.info("Getting output callback fo dat MP3")
         let playback:AudioStreamPlayback = unsafeBitCast(inUserData, to: AudioStreamPlayback.self)
         playback.onOutputForQueue(inAQ, inBuffer)
     }
@@ -126,10 +126,10 @@ class AudioStreamPlayback {
         inNumberPackets:UInt32,
         inInputData:UnsafeRawPointer,
         inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) -> Void in
-        logger.info("On PacketsProc - # of Bytes:\(inNumberBytes)" +
-                "\n# of Packets: \(inNumberPackets)" +
-                "\nInClientData: \(inClientData)" +
-                "\nInInputData: \(inInputData)")
+//        logger.info("On PacketsProc - # of Bytes:\(inNumberBytes)" +
+//                "\n# of Packets: \(inNumberPackets)" +
+//                "\nInClientData: \(inClientData)" +
+//                "\nInInputData: \(inInputData)")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.initializeForAudioQueue()
         playback.onAudioPacketsForFileStream(inNumberBytes, inNumberPackets, inInputData, inPacketDescriptions)
@@ -140,7 +140,7 @@ class AudioStreamPlayback {
         inAudioFileStream:AudioFileStreamID,
         inPropertyID:AudioFileStreamPropertyID,
         ioFlags:UnsafeMutablePointer<AudioFileStreamPropertyFlags>) -> Void in
-        logger.info("On PropertyListenerProc")
+//        logger.info("On PropertyListenerProc")
         let playback:AudioStreamPlayback = unsafeBitCast(inClientData, to: AudioStreamPlayback.self)
         playback.onPropertyChangeForFileStream(inAudioFileStream, inPropertyID, ioFlags)
     }
@@ -149,12 +149,12 @@ class AudioStreamPlayback {
         //logger.info("Running? \(running)\nfileStreamID: \(fileStreamID) - self.fileStreamId: \(self.fileStreamID)")
 
         guard let fileStreamID:AudioFileStreamID = fileStreamID, running else {
-            logger.warning("FileStreamId is null :/")
+//            logger.warning("FileStreamId is null :/")
             return
         }
 
         data.withUnsafeBytes { (bytes:UnsafePointer<UInt8>) -> Void in
-            logger.info("parseBytes fileStreamID: \(fileStreamID)\ncount: \(data.count)\ndata \(data.hexEncodedString())")
+//            logger.info("parseBytes fileStreamID: \(fileStreamID)\ncount: \(data.count)\ndata \(data.hexEncodedString())")
             let osData = AudioFileStreamParseBytes(
                 fileStreamID,
                 UInt32(data.count),
@@ -165,7 +165,7 @@ class AudioStreamPlayback {
             if (osData == noErr) {
                 //logger.info("Buffering is apparently fine")
             } else {
-                logger.error("Error'd! Returned back \(osData) from \(data.hexEncodedString())")
+//                logger.error("Error'd! Returned back \(osData) from \(data.hexEncodedString())")
             }
         }
     }
@@ -178,7 +178,7 @@ class AudioStreamPlayback {
         // is current buffer in use - log & return if true
         let bufferInUse: Bool = inuse[current].testAndSet(value: true)
         if (bufferInUse){
-            logger.info("Buffer is in use, bailing!")
+//            logger.info("Buffer is in use, bailing!")
             return
         }
 
@@ -193,14 +193,14 @@ class AudioStreamPlayback {
 //            rotateBuffer()
 //        }
         // v good bit
-        logger.info("We survived the bufferpocalypse")
+//        logger.info("We survived the bufferpocalypse")
         var isRunning = OSStatus()
         var converterError = OSStatus()
         var varSize = UInt32(MemoryLayout<OSStatus>.size)
         if (queue != nil) {
             AudioQueueGetProperty(queue!, kAudioQueueProperty_IsRunning, &isRunning, &varSize)
             AudioQueueGetProperty(queue!, kAudioQueueProperty_ConverterError, &converterError, &varSize)
-            logger.info("Is running? \(isRunning)\nConverter errors? \(converterError)")
+//            logger.info("Is running? \(isRunning)\nConverter errors? \(converterError)")
         }
         let buffer:AudioQueueBufferRef = buffers[current]
         memcpy(buffer.pointee.mAudioData.advanced(by: Int(filledBytes)), inInputData.advanced(by: offset), Int(packetSize))
@@ -226,10 +226,10 @@ class AudioStreamPlayback {
         guard let queue:AudioQueueRef = queue, running else {
             return
         }
-        logger.info("Filled buffer \(current)")
+//        logger.info("Filled buffer \(current)")
         let buffer:AudioQueueBufferRef = buffers[current]
         buffer.pointee.mAudioDataByteSize = filledBytes
-        logger.info("Enqueue buffer with \(filledBytes) bytes")
+//        logger.info("Enqueue buffer with \(filledBytes) bytes")
         let enqueueBuffer = AudioQueueEnqueueBuffer(
                 queue,
                 buffer,
@@ -247,7 +247,7 @@ class AudioStreamPlayback {
             logger.error("Starting queue failed\nQueue: \(self.queue)\nStarted? \(self.started)")
             return
         }
-        logger.info("Starting queue")
+//        logger.info("Starting queue")
         started = true
         AudioQueuePrime(queue, 0, nil)
         AudioQueueStart(queue, nil)
@@ -258,7 +258,7 @@ class AudioStreamPlayback {
             return
         }
         var queue:AudioQueueRef? = nil
-        logger.info("Format description: \(formatDescription)")
+//        logger.info("Format description: \(formatDescription)")
         DispatchQueue.global(qos: .background).sync {
             self.runloop = CFRunLoopGetCurrent()
             let status = AudioQueueNewOutput(
@@ -291,18 +291,18 @@ class AudioStreamPlayback {
     }
 
     final func onOutputForQueue(_ inAQ: AudioQueueRef, _ inBuffer:AudioQueueBufferRef) {
-        logger.info("Outputting buffer contents - getting index of \(inBuffer)")
+//        logger.info("Outputting buffer contents - getting index of \(inBuffer)")
         guard let i:Int = buffers.index(of: inBuffer) else {
             logger.error("Failed to get buffer")
             return
         }
-        logger.info("Freeing buffer \(i)")
+//        logger.info("Freeing buffer \(i)")
         inuse[i].testAndSet(value: false)
-        logger.info("Freed buffer \(i)")
+//        logger.info("Freed buffer \(i)")
     }
 
     final func onAudioPacketsForFileStream(_ inNumberBytes:UInt32, _ inNumberPackets:UInt32, _ inInputData:UnsafeRawPointer, _ inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) {
-        logger.info("Appending \(inNumberPackets) to buffer")
+//        logger.info("Appending \(inNumberPackets) to buffer")
         for i in 0..<Int(inNumberPackets) {
             appendBuffer(inInputData, inPacketDescription: &inPacketDescriptions[i])
         }
@@ -311,10 +311,10 @@ class AudioStreamPlayback {
     final func onPropertyChangeForFileStream(_ inAudioFileStream:AudioFileStreamID, _ inPropertyID:AudioFileStreamPropertyID, _ ioFlags:UnsafeMutablePointer<AudioFileStreamPropertyFlags>) {
         switch inPropertyID {
         case kAudioFileStreamProperty_ReadyToProducePackets:
-            logger.info("Ready to produce packets")
+//            logger.info("Ready to produce packets")
             break
         case kAudioFileStreamProperty_DataFormat:
-            logger.info("Getting format description")
+//            logger.info("Getting format description")
             formatDescription = getFormatDescriptionForFileStream()
         default:
             logger.info("Default")

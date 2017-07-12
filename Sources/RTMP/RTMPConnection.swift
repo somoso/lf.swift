@@ -462,7 +462,7 @@ extension RTMPConnection: RTMPSocketDelegate {
     }
 
     func listen(_ data:Data) {
-        logger.info("Current chunk? \(currentChunk)")
+//        logger.info("Current chunk? \(currentChunk)")
         guard let chunk:RTMPChunk = currentChunk ?? RTMPChunk(data, size: socket.chunkSizeC) else {
             socket.inputBuffer.append(data)
             return
@@ -470,30 +470,30 @@ extension RTMPConnection: RTMPSocketDelegate {
 
         let count = data.count <= 48 ? data.count : 36
 
-        let byteinfo = data.subdata(in: 0..<count).hexEncodedString()
+//        let byteinfo = data.subdata(in: 0..<count).hexEncodedString()
 
-        logger.info("Chunk info - size: \(chunk.size)" +
-                "\ntype: \(chunk.type)" +
-                "\nstreamID: \(chunk.streamId)" +
-                "\nheaderSize: \(chunk.headerSize)" +
-                "\nfragmented: \(chunk.fragmented)" +
-                "\nready?: \(chunk.ready)" +
-                "\ndescription: \(chunk.description)" +
-                "\nData bytes: \(byteinfo)" +
-                "\nData count: \(chunk.data.count)")
+//        logger.info("Chunk info - size: \(chunk.size)" +
+//                "\ntype: \(chunk.type)" +
+//                "\nstreamID: \(chunk.streamId)" +
+//                "\nheaderSize: \(chunk.headerSize)" +
+//                "\nfragmented: \(chunk.fragmented)" +
+//                "\nready?: \(chunk.ready)" +
+//                "\ndescription: \(chunk.description)" +
+//                "\nData bytes: \(byteinfo)" +
+//                "\nData count: \(chunk.data.count)")
 
         var position:Int = chunk.data.count
         if (4 <= chunk.data.count) && (chunk.data[1] == 0xFF) && (chunk.data[2] == 0xFF) && (chunk.data[3] == 0xFF) {
-            logger.info("Inc. position by 4")
+//            logger.info("Inc. position by 4")
             position += 4
         }
 
         if (currentChunk != nil) {
-            logger.info("Appending current chunk to chunk")
+//            logger.info("Appending current chunk to chunk")
             position = chunk.append(data, size: socket.chunkSizeC)
         }
         if (chunk.type == .two) {
-            logger.info("Chunk is type two")
+//            logger.info("Chunk is type two")
             position = chunk.append(data, message: messages[chunk.streamId])
         }
 
@@ -503,46 +503,46 @@ extension RTMPConnection: RTMPSocketDelegate {
             }
             switch chunk.type {
             case .zero:
-                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
+//                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
                 streamsmap[chunk.streamId] = message.streamId
             case .one:
-                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
+//                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
                 if let streamId = streamsmap[chunk.streamId] {
                     message.streamId = streamId
                 }
             case .two:
-                logger.info("Chunk type two - ignoring")
+//                logger.info("Chunk type two - ignoring")
                 break
             case .three:
-                logger.info("Chunk type three - ignoring")
+//                logger.info("Chunk type three - ignoring")
                 break
             }
             message.execute(self)
             currentChunk = nil
             messages[chunk.streamId] = message
             if (0 < position && position < data.count) {
-                logger.info("Relistening - Position: \(position) data: \(data)")
+//                logger.info("Relistening - Position: \(position) data: \(data)")
                 listen(data.advanced(by: position))
             }
-            logger.info("Exiting")
+//            logger.info("Exiting")
             return
         }
 
         if (chunk.fragmented) {
-            logger.info("Chunk is fragment and dealt with, clearing")
+//            logger.info("Chunk is fragment and dealt with, clearing")
             fragmentedChunks[chunk.streamId] = chunk
             currentChunk = nil
         } else {
-            logger.info("Rechunking because not fragmented")
+//            logger.info("Rechunking because not fragmented")
             currentChunk = chunk.type == .three ? fragmentedChunks[chunk.streamId] : chunk
             fragmentedChunks.removeValue(forKey: chunk.streamId)
         }
 
         if (0 < position && position < data.count) {
-            logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
+//            logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
             listen(data.advanced(by: position))
         }
 
-        logger.info("Exiting")
+//        logger.info("Exiting")
     }
 }
