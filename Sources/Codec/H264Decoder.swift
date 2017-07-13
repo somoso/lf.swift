@@ -64,49 +64,49 @@ final class H264Decoder {
         decoder.didOutputForSession(status, infoFlags: infoFlags, imageBuffer: imageBuffer, presentationTimeStamp: presentationTimeStamp, duration: duration)
     }
 
-    private var _session:VTDecompressionSession? = nil
-    private var session:VTDecompressionSession! {
-        get {
-            if (_session == nil)  {
-                guard let formatDescription:CMFormatDescription = formatDescription else {
-                    return nil
-                }
-                var record:VTDecompressionOutputCallbackRecord = VTDecompressionOutputCallbackRecord(
-                    decompressionOutputCallback: callback,
-                    decompressionOutputRefCon: unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
-                )
-                guard VTDecompressionSessionCreate(
-                    kCFAllocatorDefault,
-                    formatDescription,
-                    nil,
-                    attributes as CFDictionary?,
-                    &record,
-                    &_session ) == noErr else {
-                    return nil
-                }
-                invalidateSession = false
-            }
-            return _session!
-        }
-        set {
-            if let session:VTDecompressionSession = _session {
-                VTDecompressionSessionInvalidate(session)
-            }
-            _session = newValue
-        }
-    }
+//    private var _session:VTDecompressionSession? = nil
+//    private var session:VTDecompressionSession! {
+//        get {
+//            if (_session == nil)  {
+//                guard let formatDescription:CMFormatDescription = formatDescription else {
+//                    return nil
+//                }
+//                var record:VTDecompressionOutputCallbackRecord = VTDecompressionOutputCallbackRecord(
+//                    decompressionOutputCallback: callback,
+//                    decompressionOutputRefCon: unsafeBitCast(self, to: UnsafeMutableRawPointer.self)
+//                )
+//                guard VTDecompressionSessionCreate(
+//                    kCFAllocatorDefault,
+//                    formatDescription,
+//                    nil,
+//                    attributes as CFDictionary?,
+//                    &record,
+//                    &_session ) == noErr else {
+//                    return nil
+//                }
+//                invalidateSession = false
+//            }
+//            return _session!
+//        }
+//        set {
+//            if let session:VTDecompressionSession = _session {
+//                VTDecompressionSessionInvalidate(session)
+//            }
+//            _session = newValue
+//        }
+//    }
 
-    func decodeSampleBuffer(_ sampleBuffer:CMSampleBuffer) -> OSStatus {
-        guard let session:VTDecompressionSession = session else {
-            return kVTInvalidSessionErr
-        }
-        var flagsOut:VTDecodeInfoFlags = VTDecodeInfoFlags()
-        let decodeFlags:VTDecodeFrameFlags = VTDecodeFrameFlags(rawValue:
-            VTDecodeFrameFlags._EnableAsynchronousDecompression.rawValue |
-            VTDecodeFrameFlags._EnableTemporalProcessing.rawValue
-        )
-        return VTDecompressionSessionDecodeFrame(session, sampleBuffer, decodeFlags, nil, &flagsOut)
-    }
+//    func decodeSampleBuffer(_ sampleBuffer:CMSampleBuffer) -> OSStatus {
+//        guard let session:VTDecompressionSession = session else {
+//            return kVTInvalidSessionErr
+//        }
+//        var flagsOut:VTDecodeInfoFlags = VTDecodeInfoFlags()
+//        let decodeFlags:VTDecodeFrameFlags = VTDecodeFrameFlags(rawValue:
+//            VTDecodeFrameFlags._EnableAsynchronousDecompression.rawValue |
+//            VTDecodeFrameFlags._EnableTemporalProcessing.rawValue
+//        )
+//        return VTDecompressionSessionDecodeFrame(session, sampleBuffer, decodeFlags, nil, &flagsOut)
+//    }
 
     func didOutputForSession(_ status:OSStatus, infoFlags:VTDecodeInfoFlags, imageBuffer:CVImageBuffer?, presentationTimeStamp:CMTime, duration:CMTime) {
         guard let imageBuffer:CVImageBuffer = imageBuffer, status == noErr else {

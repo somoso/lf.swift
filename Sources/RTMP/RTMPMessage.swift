@@ -706,6 +706,7 @@ final class RTMPVideoMessage: RTMPMessage {
     }
 
     func enqueueSampleBuffer(_ stream: RTMPStream) {
+        logger.info("Enqueuing sample buffer")
         stream.videoTimestamp += Double(timestamp)
 
         let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
@@ -716,22 +717,26 @@ final class RTMPVideoMessage: RTMPMessage {
         )
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
+        logger.info("Data: \(data.hexEncodedString())")
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
             guard CMBlockBufferCreateWithMemoryBlock(
                 kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer) == noErr else {
+                logger.warning("Failing at the first hurdle :/")
                 return
             }
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
             guard CMSampleBufferCreate(
                 kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer) == noErr else {
+                logger.warning("Can't create sample buffer :'(")
                 return
             }
             guard let buffer:CMSampleBuffer = sampleBuffer else {
                 logger.warning("Buffer was nil")
                 return
             }
+            logger.info("Enqueueing this beatiful buffer: \(buffer)")
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
             status = noErr
         }
