@@ -6,6 +6,8 @@ import CoreFoundation
 
 protocol VideoDecoderDelegate: class {
     func sampleOutput(video sampleBuffer: CMSampleBuffer)
+
+    func reset()
 }
 
 // MARK: -
@@ -37,7 +39,7 @@ final class H264Decoder {
 
 
     private var isBaseline:Bool = true
-    private var buffers:[CMSampleBuffer] = []
+    //private var buffers:[CMSampleBuffer] = []
     private var attributes:[NSString:AnyObject] {
         return H264Decoder.defaultAttributes
     }
@@ -140,20 +142,22 @@ final class H264Decoder {
             return
         }
 
-        if (isBaseline) {
-            delegate?.sampleOutput(video: buffer)
-        } else {
-            buffers.append(buffer)
-            buffers.sort(by: { (lhs: CMSampleBuffer, rhs: CMSampleBuffer) -> Bool in
-                return lhs.presentationTimeStamp < rhs.presentationTimeStamp
-            })
-            if (minimumGroupOfPictures <= buffers.count) {
-                delegate?.sampleOutput(video: buffers.removeFirst())
-            }
-        }
+        delegate?.sampleOutput(video: buffer)
+
+//        if (isBaseline) {
+//            delegate?.sampleOutput(video: buffer)
+//        } else {
+//            buffers.append(buffer)
+//            buffers.sort(by: { (lhs: CMSampleBuffer, rhs: CMSampleBuffer) -> Bool in
+//                return lhs.presentationTimeStamp < rhs.presentationTimeStamp
+//            })
+//            if (minimumGroupOfPictures <= buffers.count) {
+//                delegate?.sampleOutput(video: buffers.removeFirst())
+//            }
+//        }
     }
 
     func clear() {
-        buffers.removeAll()
+        delegate?.reset()
     }
 }

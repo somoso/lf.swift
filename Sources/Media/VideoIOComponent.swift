@@ -350,5 +350,9 @@ extension VideoIOComponent: VideoDecoderDelegate {
     func sampleOutput(video sampleBuffer:CMSampleBuffer) {
         vidLayer?.enqueue(sampleBuffer)
     }
+
+    func reset() {
+        vidLayer?.flushAndRemoveImage()
+    }
 }
 
