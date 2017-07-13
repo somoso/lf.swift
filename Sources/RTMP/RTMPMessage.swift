@@ -728,7 +728,11 @@ final class RTMPVideoMessage: RTMPMessage {
                 kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer) == noErr else {
                 return
             }
-            status = stream.mixer.videoIO.decoder.decodeSampleBuffer(sampleBuffer!)
+            guard let buffer:CMSampleBuffer = sampleBuffer else {
+                return
+            }
+            stream.mixer.videoIO.vidLayer?.enqueue(buffer)
+            status = OSStatus.init()
         }
     }
 

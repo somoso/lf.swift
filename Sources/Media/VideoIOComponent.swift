@@ -5,13 +5,13 @@ import AVFoundation
 final class VideoIOComponent: IOComponent {
     let lockQueue:DispatchQueue = DispatchQueue(label: "com.haishinkit.HaishinKit.VideoIOComponent.lock")
     var drawable:NetStreamDrawable?
-    var formatDescription:CMVideoFormatDescription? {
-        didSet {
-            decoder.formatDescription = formatDescription
-        }
-    }
+    var formatDescription:CMVideoFormatDescription? //{
+//        didSet {
+//            decoder.formatDescription = formatDescription
+//        }
+    //}
     lazy var encoder:H264Encoder = H264Encoder()
-    lazy var decoder:H264Decoder = H264Decoder()
+    //lazy var decoder:H264Decoder = H264Decoder()
     var vidLayer: AVSampleBufferDisplayLayer?
     var effects:[VisualEffect] = []
 
@@ -212,7 +212,7 @@ final class VideoIOComponent: IOComponent {
     override init(mixer: AVMixer) {
         super.init(mixer: mixer)
         encoder.lockQueue = lockQueue
-        decoder.delegate = self
+//        decoder.delegate = self
         #if os(iOS)
             if let orientation:AVCaptureVideoOrientation = DeviceUtil.videoOrientation(by: UIDevice.current.orientation) {
                 self.orientation = orientation
