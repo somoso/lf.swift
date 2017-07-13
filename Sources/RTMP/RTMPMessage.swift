@@ -729,10 +729,11 @@ final class RTMPVideoMessage: RTMPMessage {
                 return
             }
             guard let buffer:CMSampleBuffer = sampleBuffer else {
+                logger.warning("Buffer was nil")
                 return
             }
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
-            status = OSStatus.init()
+            status = OSStatus.init(0)
         }
     }
 
