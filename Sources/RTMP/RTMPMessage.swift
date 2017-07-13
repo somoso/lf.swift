@@ -733,7 +733,7 @@ final class RTMPVideoMessage: RTMPMessage {
                 return
             }
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
-            status = OSStatus.init(0)
+            status = noErr
         }
     }
 
