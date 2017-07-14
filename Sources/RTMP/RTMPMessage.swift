@@ -736,13 +736,17 @@ final class RTMPVideoMessage: RTMPMessage {
                 logger.warning("Can't create sample buffer :'(")
                 return
             }
+
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
+            let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
+            let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
+            let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
+            CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
+
             guard let buffer:CMSampleBuffer = sampleBuffer else {
                 logger.warning("Buffer was nil")
                 return
             }
-            let attachments = CMSampleBufferGetSampleAttachmentsArray(buffer, true);
-            let dict = CFArrayGetValueAtIndex(attachments, 0) as! CFMutableDictionary;
-            CFDictionarySetValue(dict, unsafeBitCast(kCMSampleAttachmentKey_DisplayImmediately, to: UnsafeRawPointer.self), unsafeBitCast(kCFBooleanTrue, to: UnsafeRawPointer.self));
 
             logger.info("Enqueueing this beatiful buffer: \(buffer)")
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
