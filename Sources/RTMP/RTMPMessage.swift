@@ -709,15 +709,6 @@ final class RTMPVideoMessage: RTMPMessage {
         logger.info("Enqueuing sample buffer")
         stream.videoTimestamp += Double(timestamp)
 
-        let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
-//        var timing:CMSampleTimingInfo = CMSampleTimingInfo(
-//            duration: CMTimeMake(Int64(timestamp), 1000),
-//            presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
-//            decodeTimeStamp: kCMTimeInvalid
-//        )
-
-        var timing = CMSampleTimingInfo.init()
-
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
