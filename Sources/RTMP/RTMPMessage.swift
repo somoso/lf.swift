@@ -740,10 +740,9 @@ final class RTMPVideoMessage: RTMPMessage {
                 logger.warning("Buffer was nil")
                 return
             }
-            var array = CMSampleBufferGetSampleAttachmentsArray(buffer, true) as! [[String: Bool]]
-            logger.info("Array before: \(array)")
-            array[0][kCMSampleAttachmentKey_DisplayImmediately as String] = true
-            logger.info("Array after: \(array)")
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(buffer, true);
+            let dict = CFArrayGetValueAtIndex(attachments, 0) as! CFMutableDictionary;
+            CFDictionarySetValue(dict, unsafeBitCast(kCMSampleAttachmentKey_DisplayImmediately, to: UnsafeRawPointer.self), unsafeBitCast(kCFBooleanTrue, to: UnsafeRawPointer.self));
 
             logger.info("Enqueueing this beatiful buffer: \(buffer)")
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
