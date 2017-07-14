@@ -67,7 +67,7 @@ class AudioStreamPlayback {
                 //logger.info("Setting new fileStreamID")
                 self.fileStreamID = fileStreamID
             } else {
-                printOSStatus(status)
+                AudioStreamPlayback.printOSStatus(status)
             }
         }
     }
@@ -81,11 +81,11 @@ class AudioStreamPlayback {
             }
             var status = AudioQueueStop(oldValue, true)
             if (status != noErr) {
-                printOSStatus(status)
+                AudioStreamPlayback.printOSStatus(status)
             }
             status = AudioQueueDispose(oldValue, true)
             if (status != noErr) {
-                printOSStatus(status)
+                AudioStreamPlayback.printOSStatus(status)
             }
 
         }
@@ -103,7 +103,7 @@ class AudioStreamPlayback {
             }
             let status = AudioFileStreamClose(oldValue)
             if (status != noErr) {
-                printOSStatus(status)
+                AudioStreamPlayback.printOSStatus(status)
             }
         }
     }
@@ -236,7 +236,7 @@ class AudioStreamPlayback {
                 UInt32(packetDescriptions.count),
                 &packetDescriptions)
         guard enqueueBuffer == noErr else {
-            printOSStatus(enqueueBuffer)
+            AudioStreamPlayback.printOSStatus(enqueueBuffer)
             logger.warning("AudioQueueEnqueueBuffer")
             return
         }
@@ -271,7 +271,7 @@ class AudioStreamPlayback {
                 &queue)
 
             if (status != noErr) {
-                printOSStatus(status)
+                AudioStreamPlayback.printOSStatus(status)
                 logger.warning("Failed in AudioQueueNewOutput")
             }
         }
@@ -329,7 +329,7 @@ class AudioStreamPlayback {
         var status:OSStatus = noErr
         status = AudioQueueSetProperty(queue, kAudioQueueProperty_MagicCookie, inData, UInt32(inData.count))
         guard status == noErr else {
-            printOSStatus(status)
+            AudioStreamPlayback.printOSStatus(status)
             logger.warning("status \(status)")
             return false
         }
@@ -344,14 +344,14 @@ class AudioStreamPlayback {
         var size:UInt32 = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
         let status: OSStatus = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_DataFormat, &size, &data);
         guard status == noErr else {
-            printOSStatus(status)
+            AudioStreamPlayback.printOSStatus(status)
             logger.warning("kAudioFileStreamProperty_DataFormat")
             return nil
         }
         return data
     }
 
-    func printOSStatus(_ status: OSStatus) {
+    public static func printOSStatus(_ status: OSStatus) {
         logger.warning("Error: \(status)")
         switch (status) {
         case kAudioFileStreamError_UnsupportedFileType:
@@ -391,7 +391,7 @@ class AudioStreamPlayback {
         var writable:DarwinBoolean = true
         let status1 = AudioFileStreamGetPropertyInfo(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &writable)
         guard status1 == noErr else {
-            printOSStatus(status1)
+            AudioStreamPlayback.printOSStatus(status1)
 
             logger.warning("info kAudioFileStreamProperty_MagicCookieData")
             return nil
@@ -400,7 +400,7 @@ class AudioStreamPlayback {
         var data:[UInt8] = [UInt8](repeating: 0, count: Int(size))
         let status2 = AudioFileStreamGetProperty(fileStreamID, kAudioFileStreamProperty_MagicCookieData, &size, &data)
         guard status2 == noErr else {
-            printOSStatus(status2)
+            AudioStreamPlayback.printOSStatus(status2)
 
             logger.warning("kAudioFileStreamProperty_MagicCookieData")
             return nil

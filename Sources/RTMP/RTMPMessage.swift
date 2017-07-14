@@ -720,7 +720,6 @@ final class RTMPVideoMessage: RTMPMessage {
 
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
-        logger.info("Data: \(data.hexEncodedString())")
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
             guard CMBlockBufferCreateWithMemoryBlock(
@@ -730,8 +729,10 @@ final class RTMPVideoMessage: RTMPMessage {
             }
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
-            guard CMSampleBufferCreate(
-                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer) == noErr else {
+            let st = CMSampleBufferCreate(
+                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
+            guard st == noErr else {
+                AudioStreamPlayback.printOSStatus(st)
                 logger.warning("Can't create sample buffer :'(")
                 return
             }
@@ -739,6 +740,10 @@ final class RTMPVideoMessage: RTMPMessage {
                 logger.warning("Buffer was nil")
                 return
             }
+            let array = CMSampleBufferGetSampleAttachmentsArray(buffer, true) as! [[String: Bool]]
+            var firstDict = array[0]
+            firstDict[kCMSampleAttachmentKey_DisplayImmediately as String] = true
+
             logger.info("Enqueueing this beatiful buffer: \(buffer)")
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
             status = noErr
