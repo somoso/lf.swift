@@ -710,11 +710,14 @@ final class RTMPVideoMessage: RTMPMessage {
         stream.videoTimestamp += Double(timestamp)
 
         let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
-        var timing:CMSampleTimingInfo = CMSampleTimingInfo(
-            duration: CMTimeMake(Int64(timestamp), 1000),
-            presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
-            decodeTimeStamp: kCMTimeInvalid
-        )
+//        var timing:CMSampleTimingInfo = CMSampleTimingInfo(
+//            duration: CMTimeMake(Int64(timestamp), 1000),
+//            presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
+//            decodeTimeStamp: kCMTimeInvalid
+//        )
+
+        var timing = CMSampleTimingInfo.init()
+
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         logger.info("Data: \(data.hexEncodedString())")
@@ -728,7 +731,7 @@ final class RTMPVideoMessage: RTMPMessage {
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
             guard CMSampleBufferCreate(
-                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, nil, 1, &sampleSizes, &sampleBuffer) == noErr else {
+                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer) == noErr else {
                 logger.warning("Can't create sample buffer :'(")
                 return
             }
