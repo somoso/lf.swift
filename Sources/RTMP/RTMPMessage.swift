@@ -739,7 +739,7 @@ final class RTMPVideoMessage: RTMPMessage {
                 return
             }
 
-            logger.info("Enqueueing this beatiful buffer: \(buffer)")
+            //logger.info("Enqueueing this beatiful buffer: \(buffer)")
             stream.mixer.videoIO.vidLayer?.enqueue(buffer)
             status = noErr
         }
