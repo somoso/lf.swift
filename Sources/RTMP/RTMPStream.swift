@@ -476,6 +476,7 @@ open class RTMPStream: NetStream {
         if (readyState == .closed || readyState == .initialized) {
             return
         }
+        logger.info("Stopping stream")
         play()
         publish(nil)
         lockQueue.sync {
