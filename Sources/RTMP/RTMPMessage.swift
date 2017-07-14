@@ -740,10 +740,9 @@ final class RTMPVideoMessage: RTMPMessage {
                 logger.warning("Buffer was nil")
                 return
             }
-            let array = CMSampleBufferGetSampleAttachmentsArray(buffer, true) as! [[String: Bool]]
+            var array = CMSampleBufferGetSampleAttachmentsArray(buffer, true) as! [[String: Bool]]
             logger.info("Array before: \(array)")
-            var firstDict = array[0]
-            firstDict[kCMSampleAttachmentKey_DisplayImmediately as String] = true
+            array[0][kCMSampleAttachmentKey_DisplayImmediately as String] = true
             logger.info("Array after: \(array)")
 
             logger.info("Enqueueing this beatiful buffer: \(buffer)")
