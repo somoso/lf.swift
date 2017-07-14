@@ -713,9 +713,10 @@ final class RTMPVideoMessage: RTMPMessage {
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
-            guard CMBlockBufferCreateWithMemoryBlock(
-                kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer) == noErr else {
-                logger.warning("Failing at the first hurdle :/")
+            let bbstate = CMBlockBufferCreateWithMemoryBlock(
+                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer)
+            guard bbstate == kCMBlockBufferNoErr else {
+                logger.warning("Failing at the first hurdle :/ (\(bbstate))")
                 return
             }
             var sampleBuffer:CMSampleBuffer?
