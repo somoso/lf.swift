@@ -709,291 +709,291 @@ final class RTMPVideoMessage: RTMPMessage {
         logger.info("Enqueuing sample buffer")
         stream.videoTimestamp += Double(timestamp)
 
-        convert(frame: payload.advanced(by: FLVTagType.video.headerSize), stream: stream)
-//        var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
-//        data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
-//            var blockBuffer:CMBlockBuffer?
-//            let bbstate = CMBlockBufferCreateWithMemoryBlock(
-//                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorDefault, nil, 0, data.count, 0, &blockBuffer)
-//            guard bbstate == kCMBlockBufferNoErr else {
-//                logger.warning("Failing at the first hurdle :/ (\(bbstate))")
-//                return
-//            }
-//            var sampleBuffer:CMSampleBuffer?
-//            var sampleSizes:Int = data.count
-//            let st = CMSampleBufferCreate(
-//                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
-//            guard st == noErr else {
-//                AudioStreamPlayback.printOSStatus(st)
-//                logger.warning("Can't create sample buffer :'(")
-//                return
-//            }
+//        convert(frame: payload.advanced(by: FLVTagType.video.headerSize), stream: stream)
+        var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
+        data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
+            var blockBuffer:CMBlockBuffer?
+            let bbstate = CMBlockBufferCreateWithMemoryBlock(
+                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorDefault, nil, 0, data.count, 0, &blockBuffer)
+            guard bbstate == kCMBlockBufferNoErr else {
+                logger.warning("Failing at the first hurdle :/ (\(bbstate))")
+                return
+            }
+            var sampleBuffer:CMSampleBuffer?
+            var sampleSizes:Int = data.count
+            let st = CMSampleBufferCreate(
+                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
+            guard st == noErr else {
+                AudioStreamPlayback.printOSStatus(st)
+                logger.warning("Can't create sample buffer :'(")
+                return
+            }
+
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
+            let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
+            let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
+            let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
+            CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
+
+            guard let buffer:CMSampleBuffer = sampleBuffer else {
+                logger.warning("Buffer was nil")
+                return
+            }
+
+            //logger.info("Enqueueing this beatiful buffer: \(buffer)")
+            stream.mixer.videoIO.vidLayer?.enqueue(buffer)
+            status = noErr
+        }
+    }
+
+//    private var formatDescription: CMFormatDescription?
 //
-//            let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
-//            let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
-//            let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
-//            let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
-//            CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
-//
-//            guard let buffer:CMSampleBuffer = sampleBuffer else {
-//                logger.warning("Buffer was nil")
-//                return
-//            }
-//
-//            //logger.info("Enqueueing this beatiful buffer: \(buffer)")
-//            stream.mixer.videoIO.vidLayer?.enqueue(buffer)
-//            status = noErr
+//    func convert(frame: Data, stream: RTMPStream) {
+//        guard frame.count > 4 else {
+//            return
 //        }
-    }
-
-    private var formatDescription: CMFormatDescription?
-
-    func convert(frame: Data, stream: RTMPStream) {
-        guard frame.count > 4 else {
-            return
-        }
-
-        func startCodeIndex(in data: Data, from: Data.Index = 0) -> Data.Index? {
-            for i in from..<data.count - 5 {
-                if frame[i] == 0x00 && frame[i + 1] == 0x00 && frame[i + 2] == 0x00 && frame[i + 3] == 0x01 {
-                    return i
-                }
-            }
-
-            return nil
-        }
-
-        var naluType = NALUnitType(rawValue: frame[4] & 0x1F) ?? .unspecified
-        var spsRange: Range<Int>?
-        var ppsRange: Range<Int>?
-
-        if formatDescription == nil && naluType != .sps  {
-            print("Error: formatDescription is nil and frame does not start from SPS")
-            return
-        }
-
-        if naluType == .sps {
-            guard let ppsSartIndex = startCodeIndex(in: frame, from: 4) else {
-                print("Error: Can't find PPS start index")
-                return
-            }
-
-            spsRange = 4..<ppsSartIndex
-            naluType = NALUnitType(rawValue: frame[ppsSartIndex + 4] & 0x1F) ?? .unspecified
-        }
-
-        if naluType == .pps {
-            guard let ppsStartIndex = spsRange?.upperBound,
-                  let nextNaluPosition = startCodeIndex(in: frame, from: ppsStartIndex + 4) else {
-                print("Error: Can't find next NALU after PPS to determine PPS length")
-                return
-            }
-
-            ppsRange = ppsStartIndex + 4..<nextNaluPosition
-            naluType = NALUnitType(rawValue: frame[nextNaluPosition + 4] & 0x1F) ?? .unspecified
-        }
-
-        if let spsRange = spsRange, let ppsRange = ppsRange {
-            let spsSize = spsRange.upperBound - spsRange.lowerBound
-            let ppsSize = ppsRange.upperBound - ppsRange.lowerBound
-
-            formatDescription = nil
-
-            let status = frame.withUnsafeBytes { (frame: UnsafePointer<UInt8>) -> OSStatus in
-                var parameterSetPointers: [UnsafePointer<UInt8>] = [frame + spsRange.lowerBound, frame + ppsRange.lowerBound]
-                var parameterSetSizes: [Int] = [spsSize, ppsSize]
-
-                return CMVideoFormatDescriptionCreateFromH264ParameterSets(kCFAllocatorDefault,
-                        2,
-                        &parameterSetPointers,
-                        &parameterSetSizes,
-                        4,
-                        &formatDescription)
-            }
-
-            guard formatDescription != nil else {
-                print("Error: Can't create CMFormatDescription (OSStatus: \(status))")
-                return
-            }
-        }
-
-        var blockBuffer: CMBlockBuffer?
-
-        if naluType == .idr {
-            guard let ppsRange = ppsRange else {
-                print("Error: Can't determine start of IDR")
-                return
-            }
-
-            let idrRange: Range<Int> = ppsRange.upperBound..<frame.count
-            let idrSize = idrRange.upperBound - idrRange.lowerBound
-
-            let idr = UnsafeMutablePointer<UInt8>.allocate(capacity: idrSize)
-
-            frame.copyBytes(to: idr, from: idrRange)
-
-            idr.withMemoryRebound(to: UInt32.self, capacity: 1) { uint32Ptr in
-                uint32Ptr.pointee = UInt32(idrSize - 4).bigEndian
-            }
-
-            guard CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault,
-                    idr, idrSize,
-                    kCFAllocatorDefault,           // Cleanups our idr memory
-                    nil, 0, idrSize, 0,
-                    &blockBuffer) == kCMBlockBufferNoErr else {
-                print("Error: Can't create CMBlockBuffer from IDR")
-                return
-            }
-        }
-
-        if naluType == .codedSlice {
-            let codedSliceSize = frame.count
-
-            let codedSlice = UnsafeMutablePointer<UInt8>.allocate(capacity: codedSliceSize)
-
-            frame.copyBytes(to: codedSlice, count: codedSliceSize)
-
-            codedSlice.withMemoryRebound(to: UInt32.self, capacity: 1) { uint32Ptr in
-                uint32Ptr.pointee = UInt32(codedSliceSize - 4).bigEndian
-            }
-
-            guard CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault,
-                    codedSlice, codedSliceSize,
-                    kCFAllocatorDefault,           // Cleanups our codedSlice memory
-                    nil, 0, codedSliceSize, 0,
-                    &blockBuffer) == kCMBlockBufferNoErr else {
-                print("Error: Can't create CMBlockBuffer from coded slice")
-                return
-            }
-        }
-
-        guard let _ = blockBuffer else {
-            print("Error: Reached end of the method without available blockBuffer")
-            return
-        }
-
-        var sampleSize = frame.count
-        var sampleBuffer: CMSampleBuffer?
-
-        guard CMSampleBufferCreate(kCFAllocatorDefault, blockBuffer, true, nil, nil,
-                formatDescription, 1, 0, nil, 1, &sampleSize, &sampleBuffer) == noErr else {
-            print("Error: Failed to create CMSampleBuffer")
-            return
-        }
-
-        let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
-        let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
-        let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
-        let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
-        CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
-
-        stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
-        status = noErr
-    }
-
-    enum NALUnitType: UInt8, CustomStringConvertible {
-        case unspecified = 0
-        case codedSlice = 1
-        case dataPartitionA = 2
-        case dataPartitionB = 3
-        case dataPartitionC = 4
-        case idr = 5
-        case sei = 6
-        case sps = 7
-        case pps = 8
-        case accessUnitDelimiter = 9
-        case endOfSequence = 10
-        case endOfStream = 11
-        case filterData = 12
-        case spsExtension = 13
-        case prefixNALU = 14
-        case subsetSPS = 15
-        case reserved16 = 16
-        case reserved17 = 17
-        case reserved18 = 18
-        case csaPictureWoPartitioning = 19
-        case cse = 20
-        case cseDepthView = 21
-        case reserved22 = 22
-        case reserved23 = 23
-        case stapa = 24
-        case stapb = 25
-        case mtap16 = 26
-        case mtap24 = 27
-        case fua = 28
-        case fub = 29
-        case unspecified30 = 30
-        case unspecified31 = 31
-
-        var description: String {
-            switch self {
-            case .unspecified:
-                return "0: Unspecified (non-VCL)"
-            case .codedSlice:
-                return "1: Coded slice of a non-IDR picture (VCL)"
-            case .dataPartitionA:
-                return "2: Coded slice data partition A (VCL)"
-            case .dataPartitionB:
-                return "3: Coded slice data partition B (VCL)"
-            case .dataPartitionC:
-                return "4: Coded slice data partition C (VCL)"
-            case .idr:
-                return "5: Coded slice of an IDR picture (VCL)"
-            case .sei:
-                return "6: Supplemental enhancement information (SEI) (non-VCL)"
-            case .sps:
-                return "7: Sequence parameter set (non-VCL)"
-            case .pps:
-                return "8: Picture parameter set (non-VCL)"
-            case .accessUnitDelimiter:
-                return "9: Access unit delimiter (non-VCL)"
-            case .endOfSequence:
-                return "10: End of sequence (non-VCL)"
-            case .endOfStream:
-                return "11: End of stream (non-VCL)"
-            case .filterData:
-                return "12: Filler data (non-VCL)"
-            case .spsExtension:
-                return "13: Sequence parameter set extension (non-VCL)"
-            case .prefixNALU:
-                return "14: Prefix NAL unit (non-VCL)"
-            case .subsetSPS:
-                return "15: Subset sequence parameter set (non-VCL)"
-            case .reserved16:
-                return "16: Reserved (non-VCL)"
-            case .reserved17:
-                return "17: Reserved (non-VCL)"
-            case .reserved18:
-                return "18: Reserved (non-VCL)"
-            case .csaPictureWoPartitioning:
-                return "19: Coded slice of an auxiliary coded picture without partitioning (non-VCL)"
-            case .cse:
-                return "20: Coded slice extension (non-VCL)"
-            case .cseDepthView:
-                return "21: Coded slice extension for depth view components (non-VCL)"
-            case .reserved22:
-                return "22: Reserved (non-VCL)"
-            case .reserved23:
-                return "23: Reserved (non-VCL)"
-            case .stapa:
-                return "24: STAP-A Single-time aggregation packet (non-VCL)"
-            case .stapb:
-                return "25: STAP-B Single-time aggregation packet (non-VCL)"
-            case .mtap16:
-                return "26: MTAP16 Multi-time aggregation packet (non-VCL)"
-            case .mtap24:
-                return "27: MTAP24 Multi-time aggregation packet (non-VCL)"
-            case .fua:
-                return "28: FU-A Fragmentation unit (non-VCL)"
-            case .fub:
-                return "29: FU-B Fragmentation unit (non-VCL)"
-            case .unspecified30:
-                return "30: Unspecified (non-VCL)"
-            case .unspecified31:
-                return "31: Unspecified (non-VCL)"
-            }
-        }
-    }
+//
+//        func startCodeIndex(in data: Data, from: Data.Index = 0) -> Data.Index? {
+//            for i in from..<data.count - 5 {
+//                if frame[i] == 0x00 && frame[i + 1] == 0x00 && frame[i + 2] == 0x00 && frame[i + 3] == 0x01 {
+//                    return i
+//                }
+//            }
+//
+//            return nil
+//        }
+//
+//        var naluType = NALUnitType(rawValue: frame[4] & 0x1F) ?? .unspecified
+//        var spsRange: Range<Int>?
+//        var ppsRange: Range<Int>?
+//
+//        if formatDescription == nil && naluType != .sps  {
+//            print("Error: formatDescription is nil and frame does not start from SPS")
+//            return
+//        }
+//
+//        if naluType == .sps {
+//            guard let ppsSartIndex = startCodeIndex(in: frame, from: 4) else {
+//                print("Error: Can't find PPS start index")
+//                return
+//            }
+//
+//            spsRange = 4..<ppsSartIndex
+//            naluType = NALUnitType(rawValue: frame[ppsSartIndex + 4] & 0x1F) ?? .unspecified
+//        }
+//
+//        if naluType == .pps {
+//            guard let ppsStartIndex = spsRange?.upperBound,
+//                  let nextNaluPosition = startCodeIndex(in: frame, from: ppsStartIndex + 4) else {
+//                print("Error: Can't find next NALU after PPS to determine PPS length")
+//                return
+//            }
+//
+//            ppsRange = ppsStartIndex + 4..<nextNaluPosition
+//            naluType = NALUnitType(rawValue: frame[nextNaluPosition + 4] & 0x1F) ?? .unspecified
+//        }
+//
+//        if let spsRange = spsRange, let ppsRange = ppsRange {
+//            let spsSize = spsRange.upperBound - spsRange.lowerBound
+//            let ppsSize = ppsRange.upperBound - ppsRange.lowerBound
+//
+//            formatDescription = nil
+//
+//            let status = frame.withUnsafeBytes { (frame: UnsafePointer<UInt8>) -> OSStatus in
+//                var parameterSetPointers: [UnsafePointer<UInt8>] = [frame + spsRange.lowerBound, frame + ppsRange.lowerBound]
+//                var parameterSetSizes: [Int] = [spsSize, ppsSize]
+//
+//                return CMVideoFormatDescriptionCreateFromH264ParameterSets(kCFAllocatorDefault,
+//                        2,
+//                        &parameterSetPointers,
+//                        &parameterSetSizes,
+//                        4,
+//                        &formatDescription)
+//            }
+//
+//            guard formatDescription != nil else {
+//                print("Error: Can't create CMFormatDescription (OSStatus: \(status))")
+//                return
+//            }
+//        }
+//
+//        var blockBuffer: CMBlockBuffer?
+//
+//        if naluType == .idr {
+//            guard let ppsRange = ppsRange else {
+//                print("Error: Can't determine start of IDR")
+//                return
+//            }
+//
+//            let idrRange: Range<Int> = ppsRange.upperBound..<frame.count
+//            let idrSize = idrRange.upperBound - idrRange.lowerBound
+//
+//            let idr = UnsafeMutablePointer<UInt8>.allocate(capacity: idrSize)
+//
+//            frame.copyBytes(to: idr, from: idrRange)
+//
+//            idr.withMemoryRebound(to: UInt32.self, capacity: 1) { uint32Ptr in
+//                uint32Ptr.pointee = UInt32(idrSize - 4).bigEndian
+//            }
+//
+//            guard CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault,
+//                    idr, idrSize,
+//                    kCFAllocatorDefault,           // Cleanups our idr memory
+//                    nil, 0, idrSize, 0,
+//                    &blockBuffer) == kCMBlockBufferNoErr else {
+//                print("Error: Can't create CMBlockBuffer from IDR")
+//                return
+//            }
+//        }
+//
+//        if naluType == .codedSlice {
+//            let codedSliceSize = frame.count
+//
+//            let codedSlice = UnsafeMutablePointer<UInt8>.allocate(capacity: codedSliceSize)
+//
+//            frame.copyBytes(to: codedSlice, count: codedSliceSize)
+//
+//            codedSlice.withMemoryRebound(to: UInt32.self, capacity: 1) { uint32Ptr in
+//                uint32Ptr.pointee = UInt32(codedSliceSize - 4).bigEndian
+//            }
+//
+//            guard CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault,
+//                    codedSlice, codedSliceSize,
+//                    kCFAllocatorDefault,           // Cleanups our codedSlice memory
+//                    nil, 0, codedSliceSize, 0,
+//                    &blockBuffer) == kCMBlockBufferNoErr else {
+//                print("Error: Can't create CMBlockBuffer from coded slice")
+//                return
+//            }
+//        }
+//
+//        guard let _ = blockBuffer else {
+//            print("Error: Reached end of the method without available blockBuffer")
+//            return
+//        }
+//
+//        var sampleSize = frame.count
+//        var sampleBuffer: CMSampleBuffer?
+//
+//        guard CMSampleBufferCreate(kCFAllocatorDefault, blockBuffer, true, nil, nil,
+//                formatDescription, 1, 0, nil, 1, &sampleSize, &sampleBuffer) == noErr else {
+//            print("Error: Failed to create CMSampleBuffer")
+//            return
+//        }
+//
+//        let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
+//        let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
+//        let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
+//        let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
+//        CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
+//
+//        stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
+//        status = noErr
+//    }
+//
+//    enum NALUnitType: UInt8, CustomStringConvertible {
+//        case unspecified = 0
+//        case codedSlice = 1
+//        case dataPartitionA = 2
+//        case dataPartitionB = 3
+//        case dataPartitionC = 4
+//        case idr = 5
+//        case sei = 6
+//        case sps = 7
+//        case pps = 8
+//        case accessUnitDelimiter = 9
+//        case endOfSequence = 10
+//        case endOfStream = 11
+//        case filterData = 12
+//        case spsExtension = 13
+//        case prefixNALU = 14
+//        case subsetSPS = 15
+//        case reserved16 = 16
+//        case reserved17 = 17
+//        case reserved18 = 18
+//        case csaPictureWoPartitioning = 19
+//        case cse = 20
+//        case cseDepthView = 21
+//        case reserved22 = 22
+//        case reserved23 = 23
+//        case stapa = 24
+//        case stapb = 25
+//        case mtap16 = 26
+//        case mtap24 = 27
+//        case fua = 28
+//        case fub = 29
+//        case unspecified30 = 30
+//        case unspecified31 = 31
+//
+//        var description: String {
+//            switch self {
+//            case .unspecified:
+//                return "0: Unspecified (non-VCL)"
+//            case .codedSlice:
+//                return "1: Coded slice of a non-IDR picture (VCL)"
+//            case .dataPartitionA:
+//                return "2: Coded slice data partition A (VCL)"
+//            case .dataPartitionB:
+//                return "3: Coded slice data partition B (VCL)"
+//            case .dataPartitionC:
+//                return "4: Coded slice data partition C (VCL)"
+//            case .idr:
+//                return "5: Coded slice of an IDR picture (VCL)"
+//            case .sei:
+//                return "6: Supplemental enhancement information (SEI) (non-VCL)"
+//            case .sps:
+//                return "7: Sequence parameter set (non-VCL)"
+//            case .pps:
+//                return "8: Picture parameter set (non-VCL)"
+//            case .accessUnitDelimiter:
+//                return "9: Access unit delimiter (non-VCL)"
+//            case .endOfSequence:
+//                return "10: End of sequence (non-VCL)"
+//            case .endOfStream:
+//                return "11: End of stream (non-VCL)"
+//            case .filterData:
+//                return "12: Filler data (non-VCL)"
+//            case .spsExtension:
+//                return "13: Sequence parameter set extension (non-VCL)"
+//            case .prefixNALU:
+//                return "14: Prefix NAL unit (non-VCL)"
+//            case .subsetSPS:
+//                return "15: Subset sequence parameter set (non-VCL)"
+//            case .reserved16:
+//                return "16: Reserved (non-VCL)"
+//            case .reserved17:
+//                return "17: Reserved (non-VCL)"
+//            case .reserved18:
+//                return "18: Reserved (non-VCL)"
+//            case .csaPictureWoPartitioning:
+//                return "19: Coded slice of an auxiliary coded picture without partitioning (non-VCL)"
+//            case .cse:
+//                return "20: Coded slice extension (non-VCL)"
+//            case .cseDepthView:
+//                return "21: Coded slice extension for depth view components (non-VCL)"
+//            case .reserved22:
+//                return "22: Reserved (non-VCL)"
+//            case .reserved23:
+//                return "23: Reserved (non-VCL)"
+//            case .stapa:
+//                return "24: STAP-A Single-time aggregation packet (non-VCL)"
+//            case .stapb:
+//                return "25: STAP-B Single-time aggregation packet (non-VCL)"
+//            case .mtap16:
+//                return "26: MTAP16 Multi-time aggregation packet (non-VCL)"
+//            case .mtap24:
+//                return "27: MTAP24 Multi-time aggregation packet (non-VCL)"
+//            case .fua:
+//                return "28: FU-A Fragmentation unit (non-VCL)"
+//            case .fub:
+//                return "29: FU-B Fragmentation unit (non-VCL)"
+//            case .unspecified30:
+//                return "30: Unspecified (non-VCL)"
+//            case .unspecified31:
+//                return "31: Unspecified (non-VCL)"
+//            }
+//        }
+//    }
 
     func createFormatDescription(_ stream: RTMPStream) -> OSStatus {
         var config:AVCConfigurationRecord = AVCConfigurationRecord()
