@@ -709,7 +709,7 @@ final class RTMPVideoMessage: RTMPMessage {
         logger.info("Enqueuing sample buffer")
         stream.videoTimestamp += Double(timestamp)
 
-        convert(frame: payload, stream: stream)
+        convert(frame: payload.advanced(by: FLVTagType.video.headerSize), stream: stream)
 //        var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
 //        data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
 //            var blockBuffer:CMBlockBuffer?
