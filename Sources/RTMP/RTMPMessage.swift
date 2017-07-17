@@ -714,7 +714,7 @@ final class RTMPVideoMessage: RTMPMessage {
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
             let bbstate = CMBlockBufferCreateWithMemoryBlock(
-                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer)
+                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorDefault, nil, 0, data.count, 0, &blockBuffer)
             guard bbstate == kCMBlockBufferNoErr else {
                 logger.warning("Failing at the first hurdle :/ (\(bbstate))")
                 return
