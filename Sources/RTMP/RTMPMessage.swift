@@ -729,7 +729,7 @@ final class RTMPVideoMessage: RTMPMessage {
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:Int = data.count
             let st = CMSampleBufferCreate(
-                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, nil, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
+                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
             guard st == noErr else {
                 AudioStreamPlayback.printOSStatus(st)
                 logger.warning("Can't create sample buffer :'(")
