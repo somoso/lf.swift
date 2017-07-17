@@ -709,10 +709,10 @@ final class RTMPVideoMessage: RTMPMessage {
         logger.info("Enqueuing sample buffer - timestamp: \(timestamp) - stream.videoTimestamp: \(stream.videoTimestamp)")
         stream.videoTimestamp += Double(timestamp)
 
-        let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[1..<4]).bigEndian
+        let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
         var timing:CMSampleTimingInfo = CMSampleTimingInfo(
                 duration: CMTimeMake(Int64(timestamp), 1000),
-                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 100),
+                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
                 decodeTimeStamp: kCMTimeInvalid
         )
         logger.info("Enqueuing sample buffer - composition: \(compositionTimeoffset)\ntiming: \(timing)")
