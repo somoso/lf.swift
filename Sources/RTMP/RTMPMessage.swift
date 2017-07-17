@@ -707,7 +707,7 @@ final class RTMPVideoMessage: RTMPMessage {
 
     func enqueueSampleBuffer(_ stream: RTMPStream) {
         logger.info("Enqueuing sample buffer")
-        stream.videoTimestamp += Double(timestamp)
+        //stream.videoTimestamp += Double(timestamp)
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
