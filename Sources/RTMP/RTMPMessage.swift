@@ -711,8 +711,8 @@ final class RTMPVideoMessage: RTMPMessage {
 //
         let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
         var timing:CMSampleTimingInfo = CMSampleTimingInfo(
-                duration: CMTimeMake(Int64(timestamp), 1),
-                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1),
+                duration: CMTimeMake(Int64(timestamp), 1000),
+                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
                 decodeTimeStamp: kCMTimeInvalid
         )
         logger.info("Composition: \(compositionTimeoffset)\ntiming: \(timing)")
@@ -727,9 +727,9 @@ final class RTMPVideoMessage: RTMPMessage {
                 return
             }
             var sampleBuffer:CMSampleBuffer?
-            var sampleSizes:Int = data.count
+            var sampleSizes:[Int] = [data.count]
             let st = CMSampleBufferCreate(
-                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
+                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer)
             guard st == noErr else {
                 AudioStreamPlayback.printOSStatus(st)
                 logger.warning("Can't create sample buffer :'(")
