@@ -706,16 +706,16 @@ final class RTMPVideoMessage: RTMPMessage {
     }
 
     func enqueueSampleBuffer(_ stream: RTMPStream) {
-//        logger.info("Enqueuing sample buffer - timestamp: \(timestamp) - stream.videoTimestamp: \(stream.videoTimestamp)")
-//        stream.videoTimestamp += Double(timestamp)
+        logger.info("Enqueuing sample buffer - timestamp: \(timestamp) - stream.videoTimestamp: \(stream.videoTimestamp)")
+        stream.videoTimestamp += Double(timestamp)
 //
-//        let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
-//        var timing:CMSampleTimingInfo = CMSampleTimingInfo(
-//                duration: CMTimeMake(Int64(timestamp), 1),
-//                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1),
-//                decodeTimeStamp: kCMTimeInvalid
-//        )
-//        logger.info("Enqueuing sample buffer - composition: \(compositionTimeoffset)\ntiming: \(timing)")
+        let compositionTimeoffset:Int32 = Int32(bytes: [0] + payload[2..<5]).bigEndian
+        var timing:CMSampleTimingInfo = CMSampleTimingInfo(
+                duration: CMTimeMake(Int64(timestamp), 1),
+                presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1),
+                decodeTimeStamp: kCMTimeInvalid
+        )
+        logger.info("Composition: \(compositionTimeoffset)\ntiming: \(timing)")
 
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
