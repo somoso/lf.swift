@@ -77,8 +77,8 @@ final public class AVMixer: NSObject {
             session.stopRunning()
         }
 #endif
-        audioIO.dispose()
-        videoIO.dispose()
+//        audioIO.dispose()
+//        videoIO.dispose()
     }
 }
 
