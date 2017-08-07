@@ -221,58 +221,6 @@ final class VideoIOComponent: IOComponent {
     }
 
 #if os(iOS) || os(macOS)
-    func attachCamera(_ camera:AVCaptureDevice?) throws {
-        guard let mixer:AVMixer = mixer else {
-            return
-        }
-        
-        mixer.session.beginConfiguration()
-        defer {
-            mixer.session.commitConfiguration()
-            if (torch) {
-                setTorchMode(.on)
-            }
-        }
-
-        output = nil
-        guard let camera:AVCaptureDevice = camera else {
-            input = nil
-            return
-        }
-        #if os(iOS)
-        screen = nil
-        #endif
-
-        input = try AVCaptureDeviceInput(device: camera)
-        mixer.session.addOutput(output)
-        for connection in output.connections {
-            guard let connection:AVCaptureConnection = connection as? AVCaptureConnection else {
-                continue
-            }
-            if (connection.isVideoOrientationSupported) {
-                connection.videoOrientation = orientation
-            }
-        }
-        output.setSampleBufferDelegate(self, queue: lockQueue)
-
-        fps = fps * 1
-        position = camera.position
-        drawable?.position = camera.position
-    }
-
-    func setTorchMode(_ torchMode:AVCaptureTorchMode) {
-        guard let device:AVCaptureDevice = (input as? AVCaptureDeviceInput)?.device, device.isTorchModeSupported(torchMode) else {
-            logger.warning("torchMode(\(torchMode)) is not supported")
-            return
-        }
-        do {
-            try device.lockForConfiguration()
-            device.torchMode = torchMode
-            device.unlockForConfiguration()
-        } catch let error as NSError {
-            logger.error("while setting torch: \(error)")
-        }
-    }
     func dispose() {
         drawable?.attachStream(nil)
         input = nil
