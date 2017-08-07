@@ -57,7 +57,7 @@ final class VideoIOComponent: IOComponent {
                     if (connection.isVideoOrientationSupported) {
                         connection.videoOrientation = orientation
                         if (torch) {
-                            setTorchMode(.on)
+//                            setTorchMode(.on)
                         }
                     }
                 }
@@ -71,7 +71,7 @@ final class VideoIOComponent: IOComponent {
             guard torch != oldValue else {
                 return
             }
-            setTorchMode(torch ? .on : .off)
+            //setTorchMode(torch ? .on : .off)
         }
     }
 
