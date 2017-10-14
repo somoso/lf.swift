@@ -44,6 +44,11 @@ enum FLVAVCPacketType:UInt8 {
     case eos = 2
 }
 
+enum FLVH264PacketType: UInt8 {
+    case seq = 0x17
+    case nal = 0x27
+}
+
 enum FLVAACPacketType:UInt8 {
     case seq = 0
     case raw = 1
