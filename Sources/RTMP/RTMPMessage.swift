@@ -696,11 +696,11 @@ final class RTMPVideoMessage: RTMPMessage {
             return
         }
         logger.info("Comparing packet type")
-        switch payload[0] {
-        case FLVH264PacketType.seq.rawValue:
+        switch payload[1] {
+        case FLVAVCPacketType.seq.rawValue:
             logger.info("Creating format desc")
             status = createFormatDescription(stream)
-        case FLVH264PacketType.nal.rawValue:
+        case FLVAVCPacketType.nal.rawValue:
             logger.info("Enqueueing sample buffer")
             enqueueSampleBuffer(stream)
         default:
@@ -711,8 +711,7 @@ final class RTMPVideoMessage: RTMPMessage {
     func enqueueSampleBuffer(_ stream: RTMPStream) {
         stream.videoTimestamp += Double(timestamp)
 
-//        var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
-        var data:Data = payload.advanced(by: 0)
+        var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         logger.info("VideoPlayback:\nPayload: \(payload.hexEncodedString())\ndata: \(data.hexEncodedString())")
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
@@ -751,7 +750,8 @@ final class RTMPVideoMessage: RTMPMessage {
 
     func createFormatDescription(_ stream: RTMPStream) -> OSStatus {
         var config:AVCConfigurationRecord = AVCConfigurationRecord()
-        config.bytes = Array<UInt8>(payload[0..<1])
+        logger.info("Config bytes: \(payload.hexEncodedString())")
+        config.bytes = Array<UInt8>(payload[FLVTagType.video.headerSize..<payload.count])
         return config.createFormatDescription(&stream.mixer.videoIO.formatDescription)
     }
 }
