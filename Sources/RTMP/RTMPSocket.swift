@@ -22,7 +22,7 @@ protocol RTMPSocketCompatible: class {
 
 // MARK: -
 protocol RTMPSocketDelegate: IEventDispatcher {
-    func listen(_ data:Data)
+    func listen()
     func didSetReadyState(_ readyState:RTMPSocket.ReadyState)
     func didSetTotalBytesIn(_ totalBytesIn:Int64)
 }
@@ -100,31 +100,38 @@ final class RTMPSocket: NetSocket, RTMPSocketCompatible {
 
     override func listen() {
 //        logger.info("Calling listen")
+        var count: Int = 0
+        RTMPConnection.mutex.sync(execute: {
+            count = inputBuffer.count
+        })
         switch readyState {
         case .versionSent:
-            if (inputBuffer.count < RTMPHandshake.sigSize + 1) {
+            if (count < RTMPHandshake.sigSize + 1) {
                 break
             }
             doOutput(bytes: handshake.c2packet(inputBuffer.bytes))
-            inputBuffer.removeSubrange(0...RTMPHandshake.sigSize)
+            RTMPConnection.mutex.sync(execute: {
+                inputBuffer.removeSubrange(0...RTMPHandshake.sigSize)
+            })
+
             readyState = .ackSent
-            if (RTMPHandshake.sigSize <= inputBuffer.count) {
+            if (RTMPHandshake.sigSize <= count) {
 //                logger.info("RTMP Handshake sigSize: \(RTMPHandshake.sigSize) - IB Count: \(inputBuffer.count)")
                 listen()
             }
         case .ackSent:
-            if (inputBuffer.count < RTMPHandshake.sigSize) {
+            if (count < RTMPHandshake.sigSize) {
                 break
             }
-            inputBuffer.removeAll()
+            RTMPConnection.mutex.sync(execute: {
+                inputBuffer.removeAll()
+            })
             readyState = .handshakeDone
         case .handshakeDone:
-            if (inputBuffer.isEmpty){
+            if (count == 0){
                 break
             }
-            let bytes:Data = inputBuffer
-            inputBuffer.removeAll()
-            delegate?.listen(bytes)
+            delegate?.listen()
         default:
             break
         }

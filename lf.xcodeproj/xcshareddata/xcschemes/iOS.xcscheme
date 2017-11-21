@@ -42,6 +42,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "DDF6247D1E93CC1700756F6A"
+            BuildableName = "RtmpAudio.app"
+            BlueprintName = "RtmpAudio"
+            ReferencedContainer = "container:../../Desktop/RtmpAudio/RtmpAudio.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"

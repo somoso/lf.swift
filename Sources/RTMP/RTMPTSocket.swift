@@ -168,9 +168,7 @@ final class RTMPTSocket: NSObject, RTMPSocketCompatible {
             if (inputBuffer.isEmpty){
                 break
             }
-            let data:Data = inputBuffer
-            inputBuffer.removeAll()
-            delegate?.listen(data)
+            delegate?.listen()
         default:
             break
         }

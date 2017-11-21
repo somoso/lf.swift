@@ -38,6 +38,9 @@ open class RTMPConnection: EventDispatcher {
     static public let defaultCapabilities:Int = 239
     static public let defaultObjectEncoding:UInt8 = 0x00
 
+    static public let mutex = PThreadMutex()
+    fileprivate var currentlyListening: Bool = false
+    fileprivate let connectionLock:DispatchQueue = DispatchQueue(label: "com.haishinkit.HaishinKit.RTMPConnection.lock")
     /**
      NetStatusEvent#info.code for NetConnection
      */
@@ -230,9 +233,12 @@ open class RTMPConnection: EventDispatcher {
     override public init() {
         super.init()
         addEventListener(Event.RTMP_STATUS, selector: #selector(RTMPConnection.on(status:)))
+        currentlyListening = true
+        keepOnListening()
     }
 
     deinit {
+        currentlyListening = false
         timer = nil
         streams.removeAll()
         removeEventListener(Event.RTMP_STATUS, selector: #selector(RTMPConnection.on(status:)))
@@ -278,6 +284,7 @@ open class RTMPConnection: EventDispatcher {
         socket.delegate = self
         socket.securityLevel = uri.scheme == "rtmps" ? .negotiatedSSL : .none
         socket.connect(withName: uri.host!, port: uri.port ?? RTMPConnection.defaultPort)
+
     }
 
     open func close() {
@@ -334,6 +341,7 @@ open class RTMPConnection: EventDispatcher {
                     streamId: RTMPChunk.StreamID.control.rawValue,
                     message: RTMPSetChunkSizeMessage(UInt32(socket.chunkSizeS))
             ), locked: nil)
+
         case Code.connectRejected.rawValue:
             guard
                     let uri:URL = uri,
@@ -434,6 +442,15 @@ open class RTMPConnection: EventDispatcher {
     }
 }
 
+extension String {
+    func substring(start: Int, end: Int) -> String {
+        let sIndex = self.index(self.startIndex, offsetBy: start)
+        let eIndex = self.index(self.startIndex, offsetBy: end)
+
+        return self.substring(with: sIndex..<eIndex)
+    }
+}
+
 extension RTMPConnection: RTMPSocketDelegate {
     // MARK: RTMPSocketDelegate
 
@@ -474,100 +491,81 @@ extension RTMPConnection: RTMPSocketDelegate {
     }
 
 
-    func listen(_ data:Data) {
-//        logger.info("Current chunk? \(currentChunk)")
-        let size = getSize(data)
-        var singleChunk = Data()
-        var header = getHeaderSize(data)
-        logger.info("Size: \(size) Header Size: \(header)")
-        singleChunk.append(data.subdata(in: 0..<size + header))
-
-        logger.info("Listen info - Data: \(data.hexEncodedString())")
-
-        guard let chunk:RTMPChunk = currentChunk ?? RTMPChunk(singleChunk, size: size) else {
-            logger.warning("Failed to chunk")
-            socket.inputBuffer.append(data)
+    func listen() {
+        var d = Data()
+        if (socket == nil) {
             return
         }
-
-        logger.info("Chunk successful")
-
-//        let byteinfo = data.subdata(in: 0..<count).hexEncodedString()
-        logger.info("Chunk info - size: \(chunk.size)" +
-                "\ntype: \(chunk.type)" +
-                "\nstreamID: \(chunk.streamId)" +
-                "\nheaderSize: \(chunk.headerSize)" +
-                "\nfragmented: \(chunk.fragmented)" +
-                "\nready?: \(chunk.ready)" +
-                "\ndescription: \(chunk.description)" +
-                "\nChunk: \(singleChunk.hexEncodedString())" +
-                "\nData count: \(chunk.data.count)")
-        var position:Int = chunk.data.count
-        if (4 <= chunk.data.count) && (chunk.data[1] == 0xFF) && (chunk.data[2] == 0xFF) && (chunk.data[3] == 0xFF) {
-//            logger.info("Inc. position by 4")
-            position += 4
+        RTMPConnection.mutex.sync(execute: {
+            d.append(contentsOf: socket.inputBuffer)
+        })
+        if (d.count == 0) {
+            return
         }
+        let size = RTMPConnection.getSize(d)
+        let header = RTMPConnection.getHeaderSize(d)
 
-        if (currentChunk != nil) {
-            logger.info("Appending current chunk to chunk")
-            position = chunk.append(data, size: size)
-        }
-        if (chunk.type == .two) {
-            logger.info("Chunk is type two")
-            position = chunk.append(data, message: messages[chunk.streamId])
-        }
+        if (d.count > 0 && (size + header) <= d.count) {
 
-        logger.info("Position : \(position)")
-        if let message:RTMPMessage = chunk.message, chunk.ready {
-            if (logger.isEnabledFor(level: .verbose)) {
-                logger.verbose(chunk.description)
+            logger.info("Data: \(d.hexEncodedString())\n\nData Size: \(d.count)\nExpected Size: \(size)\nHeader: \(header)")
+            let singleChunk = d.subdata(in: 0..<size + header)
+            if (singleChunk.count < (size + header)) {
+                logger.warning("Chunk incomplete")
+                self.socket.inputBuffer.append(d)
+                return
             }
-            switch chunk.type {
-            case .zero:
-                logger.info("Chunk type zero - assigning stream id \(message.streamId)")
-                streamsmap[chunk.streamId] = message.streamId
-            case .one:
-//                logger.info("Chunk type one - getting streamsmap \(streamsmap[chunk.streamId])")
-                if let streamId = streamsmap[chunk.streamId] {
-                    message.streamId = streamId
+            logger.info("Single Chunk: \(singleChunk.hexEncodedString()) Size: \(singleChunk.count)")
+
+            guard let chunk: RTMPChunk = RTMPChunk(singleChunk, size: size) else {
+                logger.warning("Failed to chunk")
+                self.socket.inputBuffer.append(d)
+                return
+            }
+
+            if let message: RTMPMessage = chunk.message, chunk.ready {
+                if (logger.isEnabledFor(level: .verbose)) {
+                    logger.verbose(chunk.description)
                 }
-            case .two:
-                logger.info("Chunk type two - ignoring")
-                break
-            case .three:
-                logger.info("Chunk type three - ignoring")
-                break
+                switch chunk.type {
+                case .zero:
+                    logger.info("Chunk type zero - assigning stream id \(message.streamId)")
+                    self.streamsmap[chunk.streamId] = message.streamId
+                case .one:
+                    logger.info("Chunk type one - getting streamsmap \(String(describing: self.streamsmap[chunk.streamId]))")
+                    if let streamId = self.streamsmap[chunk.streamId] {
+                        message.streamId = streamId
+                    }
+                case .two:
+                    logger.info("Chunk type two - ignoring")
+                    break
+                case .three:
+                    logger.info("Chunk type three - ignoring")
+                    break
+                }
+                DispatchQueue.main.async {
+                    message.execute(self)
+                    self.messages[chunk.streamId] = message
+                }
+
             }
-            message.execute(self)
-            currentChunk = nil
-            messages[chunk.streamId] = message
-            if (0 < position && position < data.count) {
-                logger.info("Relistening - Position: \(position) data: \(data)")
-                listen(data.advanced(by: position))
-            }
-            logger.info("Exiting")
-            return
+
+//            logger.info("Advancing \(d.hexEncodedString())\nWith: \(singleChunk.hexEncodedString())")
+//            d = d.subdata(in: singleChunk.count..<d.count)
+//            if (d.count > 0) {
+//                size = RTMPConnection.getSize(d)
+//                header = RTMPConnection.getHeaderSize(d)
+//            }
+        }
+        if (d.count > 0) {
+            self.socket.inputBuffer.append(d)
         }
 
-        if (chunk.fragmented) {
-            logger.info("Chunk is fragment and dealt with, clearing")
-            fragmentedChunks[chunk.streamId] = chunk
-            currentChunk = nil
-        } else {
-            logger.info("Rechunking because not fragmented")
-            currentChunk = chunk.type == .three ? fragmentedChunks[chunk.streamId] : chunk
-            fragmentedChunks.removeValue(forKey: chunk.streamId)
-        }
 
-        if (0 < position && position < data.count) {
-            logger.info("Escaped RTMPMessage - Position: \(position) data (count): \(data)")
-            listen(data.advanced(by: position))
-        }
 
-        logger.info("Exiting")
+
     }
 
-    private func getHeaderSize(_ data: Data) -> Int {
+    static func getHeaderSize(_ data: Data) -> Int {
         var header: Int = 12;
 
         if (data.bytes[0] & 0b11000000 == 0b00000000) {
@@ -580,11 +578,24 @@ extension RTMPConnection: RTMPSocketDelegate {
         return header
     }
 
-    private func getSize(_ chunks: Data) -> Int {
+    static func getSize(_ chunks: Data) -> Int {
+        if (!(chunks.count >= 7)) {
+            return 0;
+        }
         let subset = chunks.subdata(in: 4..<7)
 //        logger.info("Subset: \(subset.hexEncodedString())")
         let size: Int = Int(subset.hexEncodedString(), radix: 16)!
         let headerSize = getHeaderSize(chunks);
         return (size < chunks.count - headerSize) ? size : chunks.count - headerSize
+    }
+    
+    func keepOnListening() {
+        self.connectionLock.async {
+            logger.info("Starting to listen")
+            while (self.currentlyListening) {
+                self.listen()
+            }
+            logger.info("Not listening anymore")
+        }
     }
 }
