@@ -711,20 +711,15 @@ final class RTMPVideoMessage: RTMPMessage {
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
-            let bbstate = CMBlockBufferCreateWithMemoryBlock(
-                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer)
-            guard bbstate == kCMBlockBufferNoErr else {
-                logger.warning("Failing at the first hurdle :/ (\(bbstate))")
-                return
+            guard CMBlockBufferCreateWithMemoryBlock(
+                kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer) == noErr else {
+                    return
             }
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
-            let st = CMSampleBufferCreate(
-                    kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
-            guard st == noErr else {
-                AudioStreamPlayback.printOSStatus(st)
-                logger.warning("Can't create sample buffer :'(")
-                return
+            guard CMSampleBufferCreate(
+                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer) == noErr else {
+                    return
             }
 
             let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
@@ -733,13 +728,7 @@ final class RTMPVideoMessage: RTMPMessage {
             let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
             CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
 
-            guard let buffer:CMSampleBuffer = sampleBuffer else {
-                logger.warning("Buffer was nil")
-                return
-            }
-
-            //logger.info("Enqueueing this beatiful buffer: \(buffer)")
-            stream.mixer.videoIO.vidLayer?.enqueue(buffer)
+            stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
             status = noErr
         }
     }
