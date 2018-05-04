@@ -336,7 +336,6 @@ open class RTMPStream: NetStream {
         mixer.videoIO.vidLayer = layer
     }
 
-    @available(iOS 8.0, *)
     open func playStream(_ path:String) {
         play(path)
     }
