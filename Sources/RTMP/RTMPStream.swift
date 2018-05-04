@@ -337,7 +337,7 @@ open class RTMPStream: NetStream {
     }
 
     @available(iOS 8.0, *)
-    open func play(_ path:String) {
+    open func playStream(_ path:String) {
         play(path)
     }
 
