@@ -118,26 +118,6 @@ open class NetStream: NSObject {
     }
 
 #if os(iOS) || os(macOS)
-    open func attachCamera(_ camera:AVCaptureDevice?, onError:((_ error:NSError) -> Void)? = nil) {
-        lockQueue.async {
-            do {
-                try self.mixer.videoIO.attachCamera(camera)
-            } catch let error as NSError {
-                onError?(error)
-            }
-        }
-    }
-
-    open func attachAudio(_ audio:AVCaptureDevice?, automaticallyConfiguresApplicationAudioSession:Bool = false, onError:((_ error:NSError) -> Void)? = nil) {
-        lockQueue.async {
-            do {
-                try self.mixer.audioIO.attachAudio(audio, automaticallyConfiguresApplicationAudioSession: automaticallyConfiguresApplicationAudioSession)
-            } catch let error as NSError {
-                onError?(error)
-            }
-        }
-    }
-
     open func appendSampleBuffer(_ sampleBuffer:CMSampleBuffer, withType: CMSampleBufferType, options:[NSObject: AnyObject]? = nil) {
         switch withType {
         case .audio:
