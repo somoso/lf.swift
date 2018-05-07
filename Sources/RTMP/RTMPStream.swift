@@ -338,8 +338,8 @@ open class RTMPStream: NetStream {
 
     @objc
     @available(iOS 8.0, *)
-    open func playStream(stream: String) {
-        play(stream);
+    open func playStream(stream: NSString) {
+        play(stream as String);
     }
 
     open func play(_ arguments:Any?...) {
