@@ -336,12 +336,7 @@ open class RTMPStream: NetStream {
         mixer.videoIO.vidLayer = layer
     }
 
-    @objc
     @available(iOS 8.0, *)
-    open func playStream(stream: NSString) {
-        play(stream as String);
-    }
-
     open func play(_ arguments:Any?...) {
 //        logger.info("Playing, args: \(arguments)")
         lockQueue.async {
