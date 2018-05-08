@@ -340,14 +340,19 @@ open class RTMPConnection: EventDispatcher {
             socket.deinitConnection(isDisconnected: false)
             switch true {
             case description.contains("reason=nosuchuser"):
+                logging.info("No such user")
                 break
             case description.contains("reason=authfailed"):
+                logging.info("Authorisation failed")
                 break
             case description.contains("reason=needauth"):
+                logging.info("Need authorisation")
                 let command:String = RTMPConnection.createSanJoseAuthCommand(uri, description: description)
                 connect(command, arguments: arguments)
             case description.contains("authmod=adobe"):
+                logging.info("Auth Mode - Adobe")
                 if (user == "" || password == "") {
+                    logging.info("Closing connection - username & password empty")
                     close(isDisconnected: true)
                     break
                 }
@@ -358,6 +363,7 @@ open class RTMPConnection: EventDispatcher {
                 break
             }
         case Code.connectClosed.rawValue:
+            logging.info("Received connection closed...?")
             close(isDisconnected: true)
         default:
             break
