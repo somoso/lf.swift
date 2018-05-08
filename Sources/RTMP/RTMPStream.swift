@@ -338,8 +338,7 @@ open class RTMPStream: NetStream {
     
     open func playStream(_ streamName: NSString) {
         logger.info("playStream called with param \(streamName)")
-        let param = streamName as String
-        play(param)
+        play(streamName)
     }
 
     open func play(_ arguments:Any?...) {
