@@ -722,17 +722,19 @@ final class RTMPVideoMessage: RTMPMessage {
                     return
             }
 
-            let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
-            let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
-            let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
-            let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
-            CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
+            let attachments: CFArray? = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
+            if let attachmentsArray = attachments {
+                let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachmentsArray, 0), to: CFMutableDictionary.self)
+                CFDictionarySetValue(dictionary,
+                                     Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque(),
+                                     Unmanaged.passUnretained(kCFBooleanTrue).toOpaque())
 
-            if (stream.mixer.videoIO.vidLayer != nil) {
-//                logger.info("Enqueing buffer to video stream")
-                stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
-            } else {
-                logger.warning("No vidLayer set")
+                if (stream.mixer.videoIO.vidLayer != nil) {
+    //                logger.info("Enqueing buffer to video stream")
+                    stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
+                } else {
+                    logger.warning("No vidLayer set")
+                }
             }
             status = noErr
         }
