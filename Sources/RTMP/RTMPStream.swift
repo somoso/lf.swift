@@ -338,7 +338,8 @@ open class RTMPStream: NetStream {
     
     open func playStream(_ streamName: NSString) {
         logger.info("playStream called with param \(streamName)")
-        play(streamName)
+        let param = streamName as! String
+        play(param)
     }
 
     open func play(_ arguments:Any?...) {
@@ -369,7 +370,7 @@ open class RTMPStream: NetStream {
             while (self.readyState == .initialized) {
                 usleep(100)
             }
-            self.info.resourceName = name
+            self.info.resourceName = name!
             logger.info("Sending play cmd, resname: \(String(describing: self.info.resourceName))")
             self.rtmpConnection.socket.doOutput(chunk: RTMPChunk(message: RTMPCommandMessage(
                 streamId: self.id,
