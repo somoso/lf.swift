@@ -339,7 +339,7 @@ open class RTMPStream: NetStream {
     open func playStream(_ streamName: NSString) {
         logger.info("playStream called with param \(streamName)")
         guard let param:String = streamName as? String else {
-            logger.warn("\(streamName) is null. Not playing stream");
+            logger.warning("\(streamName) is null. Not playing stream");
             return
         }
         play(param)
