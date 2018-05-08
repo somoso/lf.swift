@@ -573,7 +573,7 @@ final class RTMPAudioMessage: RTMPMessage {
 
 //            logger.info("Payload: \(super.payload.hexEncodedString())")
             if (length == newValue.count && !newValue.isEmpty) {
-                logger.info("Getting essential values")
+//                logger.info("Getting essential values")
                 guard let codec:FLVAudioCodec = FLVAudioCodec(rawValue: newValue[0] >> 4),
                     let soundRate:FLVSoundRate = FLVSoundRate(rawValue: (newValue[0] & 0b00001100) >> 2),
                     let soundSize:FLVSoundSize = FLVSoundSize(rawValue: (newValue[0] & 0b00000010) >> 1),
@@ -729,7 +729,7 @@ final class RTMPVideoMessage: RTMPMessage {
             CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
 
             if (stream.mixer.videoIO.vidLayer != nil) {
-                logger.info("Enqueing buffer to video stream")
+//                logger.info("Enqueing buffer to video stream")
                 stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
             } else {
                 logger.warning("No vidLayer set")
