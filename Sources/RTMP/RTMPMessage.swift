@@ -728,7 +728,12 @@ final class RTMPVideoMessage: RTMPMessage {
             let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
             CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
 
-            stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
+            if (stream.mixer.videoIO.vidLayer != null) {
+                logger.info("Enqueing buffer to video stream")
+                stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
+            } else {
+                logger.warn("No vidLayer set")
+            }
             status = noErr
         }
     }
