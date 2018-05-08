@@ -486,7 +486,6 @@ open class RTMPStream: NetStream {
             return
         }
         logger.info("Stopping stream")
-        Thread.callStackSymbols.forEach{logger.info($0)}
         play()
         publish(nil)
         lockQueue.sync {
