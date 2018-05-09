@@ -6,7 +6,7 @@ public class NetSocket: NSObject {
 
     var timeout:Int64 = NetSocket.defaultTimeout
     var connected:Bool = false
-    weak var inputBuffer:Data? = Data()
+    var inputBuffer:Data = Data()
     var inputStream:InputStream?
     var windowSizeC:Int = NetSocket.defaultWindowSizeC
     var outputStream:OutputStream?
@@ -113,7 +113,7 @@ public class NetSocket: NSObject {
         totalBytesOut = 0
         queueBytesOut = 0
         timeoutHandler = didTimeout
-        inputBuffer?.removeAll(keepingCapacity: false)
+        inputBuffer.removeAll(keepingCapacity: false)
 
         guard let inputStream:InputStream = inputStream, let outputStream:OutputStream = outputStream else {
             return
@@ -168,7 +168,7 @@ public class NetSocket: NSObject {
 //        logger.info("IS Length: \(length)")
         if 0 < length {
             totalBytesIn += Int64(length)
-            inputBuffer?.append(buffer, count: length)
+            inputBuffer.append(buffer, count: length)
             listen()
         }
     }
