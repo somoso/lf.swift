@@ -732,7 +732,7 @@ final class RTMPVideoMessage: RTMPMessage {
             if stream.mixer.videoIO.vidLayer != nil {
                 stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
             } else {
-                logger.warn("vidlayer not set")
+                logger.warning("vidlayer not set")
             }
             status = noErr
         }
