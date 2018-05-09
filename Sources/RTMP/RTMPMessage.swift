@@ -708,6 +708,13 @@ final class RTMPVideoMessage: RTMPMessage {
     func enqueueSampleBuffer(_ stream: RTMPStream) {
         stream.videoTimestamp += Double(timestamp)
 
+        let compositionTimeoffset: Int32 = Int32(data: [0] + payload[2..<5]).bigEndian
+        var timing: CMSampleTimingInfo = CMSampleTimingInfo(
+            duration: CMTimeMake(Int64(timestamp), 1000),
+            presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
+            decodeTimeStamp: kCMTimeInvalid
+        )
+
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
             var blockBuffer:CMBlockBuffer?
@@ -717,24 +724,15 @@ final class RTMPVideoMessage: RTMPMessage {
             }
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
+
             guard CMSampleBufferCreate(
-                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer) == noErr else {
+                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer) == noErr else {
                     return
             }
-
-            let attachments: CFArray? = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer!, true)
-            if let attachmentsArray = attachments {
-                let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachmentsArray, 0), to: CFMutableDictionary.self)
-                CFDictionarySetValue(dictionary,
-                                     Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque(),
-                                     Unmanaged.passUnretained(kCFBooleanTrue).toOpaque())
-
-                if (stream.mixer.videoIO.vidLayer != nil) {
-    //                logger.info("Enqueing buffer to video stream")
-                    stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
-                } else {
-                    logger.warning("No vidLayer set")
-                }
+            if stream.mixer.videoIO.vidLayer != nil {
+                stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
+            } else {
+                logging.warn("vidlayer not set")
             }
             status = noErr
         }
