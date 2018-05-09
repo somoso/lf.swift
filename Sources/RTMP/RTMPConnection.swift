@@ -487,10 +487,10 @@ extension RTMPConnection: RTMPSocketDelegate {
         }
 
         if (currentChunk != nil) {
-            position = chunk.append(data.bytes, size: socket.chunkSizeC)
+            position = chunk.append(data, size: socket.chunkSizeC)
         }
         if (chunk.type == .two) {
-            position = chunk.append(data.bytes, message: messages[chunk.streamId])
+            position = chunk.append(data, message: messages[chunk.streamId])
         }
 
         if let message:RTMPMessage = chunk.message, chunk.ready {
