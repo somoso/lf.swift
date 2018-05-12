@@ -215,7 +215,10 @@ class AudioStreamPlayback {
     }
 
     func rotateBuffer() {
-        current = (current + 1) % numberOfBuffers
+        current += 1
+        if numberOfBuffers <= current {
+            current = 0
+        }
         filledBytes = 0
         packetDescriptions.removeAll()
     }
@@ -242,7 +245,7 @@ class AudioStreamPlayback {
 
     func startQueueIfNeed() {
         guard let queue:AudioQueueRef = queue, !started else {
-            logger.error("Starting queue failed\nQueue: \(self.queue)\nStarted? \(self.started)")
+            logger.error("Starting queue failed\nQueue: \(String(describing: self.queue))\nStarted? \(String(describing: self.started))")
             return
         }
 //        logger.info("Starting queue")
