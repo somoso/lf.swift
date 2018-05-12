@@ -4,28 +4,6 @@ import AVFoundation
 
 typealias Byte = UInt8
 
-struct AtomicBoolean {
-
-    private var val: Byte = 0
-
-    /// Sets the value, and returns the previous value.
-    /// The test/set is an atomic operation.
-    mutating func testAndSet(value: Bool) -> Bool {
-        if value {
-            return OSAtomicTestAndSet(0, &val)
-        } else {
-            return OSAtomicTestAndClear(0, &val)
-        }
-    }
-
-    /// Returns the current value of the boolean.
-    /// The value may change before this method returns.
-    func test() -> Bool {
-        return val != 0
-    }
-
-}
-
 class AudioStreamPlayback {
     static let defaultBufferSize:UInt32 = 128 * 1024
     static let defaultNumberOfBuffers:Int = 128
@@ -90,7 +68,7 @@ class AudioStreamPlayback {
 
         }
     }
-    fileprivate var inuse:[AtomicBoolean] = []
+    fileprivate var inuse:[Bool] = []
     fileprivate var buffers:[AudioQueueBufferRef] = []
     fileprivate var current:Int = 0
     fileprivate var started:Bool = false
@@ -175,43 +153,17 @@ class AudioStreamPlayback {
     }
 
     func appendBuffer(_ inInputData:UnsafeRawPointer, inPacketDescription:inout AudioStreamPacketDescription) {
-        // is current buffer in use - log & return if true
-        var currentBuffer = inuse[current]
-        let bufferInUse: Bool = currentBuffer.testAndSet(value: true)
-        if (bufferInUse){
-//            logger.info("Buffer is in use, bailing!")
-            return
+        let offset: Int = Int(inPacketDescription.mStartOffset)
+        let packetSize: UInt32 = inPacketDescription.mDataByteSize
+        if isBufferFull(packetSize) || isPacketDescriptionsFull {
+            enqueueBuffer()
+            rotateBuffer()
         }
-
-        // v dead code
-        let offset:Int = Int(inPacketDescription.mStartOffset)
-        let packetSize:UInt32 = inPacketDescription.mDataByteSize
-//        let bufferFull = isBufferFull(packetSize)
-//        logger.info("Offset: \(offset)\nPacket Size: \(packetSize)\nIs Buffer Full? \(bufferFull)\nPacket Description Full: \(isPacketDescriptionsFull)")
-//
-//        if (bufferFull || isPacketDescriptionsFull) {
-//            enqueueBuffer()
-//            rotateBuffer()
-//        }
-        // v good bit
-//        logger.info("We survived the bufferpocalypse")
-        var isRunning = OSStatus()
-        var converterError = OSStatus()
-        var varSize = UInt32(MemoryLayout<OSStatus>.size)
-        if (queue != nil) {
-            AudioQueueGetProperty(queue!, kAudioQueueProperty_IsRunning, &isRunning, &varSize)
-            AudioQueueGetProperty(queue!, kAudioQueueProperty_ConverterError, &converterError, &varSize)
-//            logger.info("Is running? \(isRunning)\nConverter errors? \(converterError)")
-        }
-        let buffer:AudioQueueBufferRef = buffers[current]
+        let buffer: AudioQueueBufferRef = buffers[current]
         memcpy(buffer.pointee.mAudioData.advanced(by: Int(filledBytes)), inInputData.advanced(by: offset), Int(packetSize))
         inPacketDescription.mStartOffset = Int64(filledBytes)
         packetDescriptions.append(inPacketDescription)
         filledBytes += packetSize
-        // unconditional enqueue & rotate - rotate does not check lock
-
-        enqueueBuffer()
-        rotateBuffer()
     }
 
     func rotateBuffer() {
@@ -223,28 +175,28 @@ class AudioStreamPlayback {
         packetDescriptions.removeAll()
         var loop: Bool = true
         repeat {
-            loop = inuse[current].test()
+            objc_sync_enter(inuse)
+            loop = inuse[current]
+            objc_sync_exit(inuse)
         }
-        while(loop)
+            while(loop)
+
     }
 
     func enqueueBuffer() {
-        guard let queue:AudioQueueRef = queue, running else {
+        guard let queue: AudioQueueRef = queue, running else {
             return
         }
-//        logger.info("Filled buffer \(current)")
-        let buffer:AudioQueueBufferRef = buffers[current]
+        inuse[current] = true
+        let buffer: AudioQueueBufferRef = buffers[current]
         buffer.pointee.mAudioDataByteSize = filledBytes
-//        logger.info("Enqueue buffer with \(filledBytes) bytes")
-        let enqueueBuffer = AudioQueueEnqueueBuffer(
-                queue,
-                buffer,
-                UInt32(packetDescriptions.count),
-                &packetDescriptions)
-        guard enqueueBuffer == noErr else {
-            AudioStreamPlayback.printOSStatus(enqueueBuffer)
-            logger.warning("AudioQueueEnqueueBuffer")
-            return
+        guard AudioQueueEnqueueBuffer(
+            queue,
+            buffer,
+            UInt32(packetDescriptions.count),
+            &packetDescriptions) == noErr else {
+                logger.warning("AudioQueueEnqueueBuffer")
+                return
         }
     }
 
@@ -297,16 +249,12 @@ class AudioStreamPlayback {
     }
 
     final func onOutputForQueue(_ inAQ: AudioQueueRef, _ inBuffer:AudioQueueBufferRef) {
-//        logger.info("Outputting buffer contents - getting index of \(inBuffer)")
-        guard let i:Int = buffers.index(of: inBuffer) else {
-            logger.error("Failed to get buffer")
+        guard let i: Int = buffers.index(of: inBuffer) else {
             return
         }
-//        logger.info("Freeing buffer \(i)")
-        var bufferInUse: AtomicBoolean = inuse[i]
-        bufferInUse.testAndSet(value: false)
-        inuse[i] = bufferInUse
-//        logger.info("Freed buffer \(i)")
+        objc_sync_enter(inuse)
+        inuse[i] = false
+        objc_sync_exit(inuse)
     }
 
     final func onAudioPacketsForFileStream(_ inNumberBytes:UInt32, _ inNumberPackets:UInt32, _ inInputData:UnsafeRawPointer, _ inPacketDescriptions:UnsafeMutablePointer<AudioStreamPacketDescription>) {
@@ -424,11 +372,7 @@ extension AudioStreamPlayback: Runnable {
             guard !self.running else {
                 return
             }
-            //self.inuse = [AtomicBoolean](count: self.numberOfBuffers)
-            self.inuse = [AtomicBoolean]()
-            for i in 0...self.numberOfBuffers {
-                self.inuse.insert(AtomicBoolean.init(), at: i)
-            }
+            self.inuse = [Bool](repeating: false, count: self.numberOfBuffers)
             self.started = false
             self.current = 0
             self.filledBytes = 0
