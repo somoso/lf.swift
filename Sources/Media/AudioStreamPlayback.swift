@@ -221,6 +221,11 @@ class AudioStreamPlayback {
         }
         filledBytes = 0
         packetDescriptions.removeAll()
+        var loop: Bool = true
+        repeat {
+            loop = inuse[current].test()
+        }
+        while(loop)
     }
 
     func enqueueBuffer() {
