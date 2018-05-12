@@ -176,7 +176,8 @@ class AudioStreamPlayback {
 
     func appendBuffer(_ inInputData:UnsafeRawPointer, inPacketDescription:inout AudioStreamPacketDescription) {
         // is current buffer in use - log & return if true
-        let bufferInUse: Bool = inuse[current].testAndSet(value: true)
+        var currentBuffer = inuse[current]
+        let bufferInUse: Bool = currentBuffer.testAndSet(value: true)
         if (bufferInUse){
 //            logger.info("Buffer is in use, bailing!")
             return
@@ -214,10 +215,7 @@ class AudioStreamPlayback {
     }
 
     func rotateBuffer() {
-        current += 1
-        if (numberOfBuffers <= current) {
-            current = 0
-        }
+        current = (current + 1) % numberOfBuffers
         filledBytes = 0
         packetDescriptions.removeAll()
     }

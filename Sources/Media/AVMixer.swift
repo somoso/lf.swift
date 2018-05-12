@@ -10,7 +10,7 @@ final public class AVMixer: NSObject {
         "continuousExposure",
     ]
 
-    static let defaultFPS:Float64 = 15
+    static let defaultFPS:Float64 = 30
     static let defaultVideoSettings:[NSString: AnyObject] = [
         kCVPixelBufferPixelFormatTypeKey: NSNumber(value: kCVPixelFormatType_32BGRA)
     ]
@@ -101,7 +101,7 @@ extension AVMixer {
     final func startPlaying() {
 //        logger.info("Starting audio and video playback")
         //AudioStreamPlayback call
-        audioIO.playback.startQueueIfNeed()
+        //audioIO.playback.startQueueIfNeed()
     }
     final func stopPlaying() {
 //        logger.info("Stopping audio and video playback")

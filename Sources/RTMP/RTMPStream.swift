@@ -338,7 +338,10 @@ open class RTMPStream: NetStream {
     
     open func playStream(_ streamName: NSString) {
         logger.info("playStream called with param \(streamName)")
-        let param = [streamName as String]
+        guard let param:String = streamName as? String else {
+            logger.warning("\(streamName) is null. Not playing stream");
+            return
+        }
         play(param)
     }
 
@@ -591,11 +594,11 @@ open class RTMPStream: NetStream {
             metadata["height"] = mixer.videoIO.encoder.height
             metadata["framerate"] = mixer.videoIO.fps
             metadata["videocodecid"] = FLVVideoCodec.avc.rawValue
-            metadata["videodatarate"] = mixer.videoIO.encoder.bitrate
+            metadata["videodatarate"] = mixer.videoIO.encoder.bitrate / 1024
         }
         if let _:AVCaptureInput = mixer.audioIO.input {
             metadata["audiocodecid"] = FLVAudioCodec.mp3_8k.rawValue
-            metadata["audiodatarate"] = mixer.audioIO.encoder.bitrate
+            metadata["audiodatarate"] = mixer.audioIO.encoder.bitrate / 1024
         }
         logger.info("metadata: \(metadata)")
 #endif
