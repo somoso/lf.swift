@@ -299,6 +299,7 @@ class AudioStreamPlayback {
 //        logger.info("Freeing buffer \(i)")
         var bufferInUse: AtomicBoolean = inuse[i]
         bufferInUse.testAndSet(value: false)
+        inuse[i] = bufferInUse
 //        logger.info("Freed buffer \(i)")
     }
 
