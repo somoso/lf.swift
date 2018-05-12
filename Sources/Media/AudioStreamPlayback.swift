@@ -297,7 +297,8 @@ class AudioStreamPlayback {
             return
         }
 //        logger.info("Freeing buffer \(i)")
-        inuse[i].testAndSet(value: false)
+        var bufferInUse: AtomicBoolean = inuse[i]
+        bufferInUse.testAndSet(value: false)
 //        logger.info("Freed buffer \(i)")
     }
 
