@@ -179,7 +179,7 @@ class AudioStreamPlayback {
         var currentBuffer = inuse[current]
         let bufferInUse: Bool = currentBuffer.testAndSet(value: true)
         if (bufferInUse){
-//            logger.info("Buffer is in use, bailing!")
+            logger.error("Buffer is in use, bailing!")
             return
         }
 
