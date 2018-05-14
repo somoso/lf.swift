@@ -28,7 +28,7 @@ struct AtomicBoolean {
 
 class AudioStreamPlayback {
     static let defaultBufferSize:UInt32 = 128 * 1024
-    static let defaultNumberOfBuffers:Int = 128
+    static let defaultNumberOfBuffers:Int = 2048
     static let defaultMaxPacketDescriptions:Int = 1
 
     var await:Bool = false
