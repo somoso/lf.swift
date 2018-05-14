@@ -550,9 +550,6 @@ final class RTMPAudioMessage: RTMPMessage {
 
     var soundData:Data {
         let data:Data = payload.isEmpty ? Data() : payload//.advanced(by: codec.headerSize)
-        guard let config:AudioSpecificConfig = config else {
-            return data
-        }
 //        logger.info("RTMPAudioMessage: data \(data)\n config: \(config)")
         return data;
     }
@@ -708,32 +705,42 @@ final class RTMPVideoMessage: RTMPMessage {
     func enqueueSampleBuffer(_ stream: RTMPStream) {
         stream.videoTimestamp += Double(timestamp)
 
-        let compositionTimeoffset: Int32 = Int32(data: [0] + payload[2..<5]).bigEndian
-        var timing: CMSampleTimingInfo = CMSampleTimingInfo(
-            duration: CMTimeMake(Int64(timestamp), 1000),
-            presentationTimeStamp: CMTimeMake(Int64(stream.videoTimestamp) + Int64(compositionTimeoffset), 1000),
-            decodeTimeStamp: kCMTimeInvalid
-        )
-
         var data:Data = payload.advanced(by: FLVTagType.video.headerSize)
         data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
+            //logger.info("Data: \(data.hexEncodedString())")
             var blockBuffer:CMBlockBuffer?
-            guard CMBlockBufferCreateWithMemoryBlock(
-                kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer) == noErr else {
-                    return
+            let bbstate = CMBlockBufferCreateWithMemoryBlock(
+                    kCFAllocatorDefault, bytes, data.count, kCFAllocatorNull, nil, 0, data.count, 0, &blockBuffer)
+            guard bbstate == kCMBlockBufferNoErr else {
+                logger.warning("Failing at the first hurdle :/ (\(bbstate))")
+                return
             }
             var sampleBuffer:CMSampleBuffer?
             var sampleSizes:[Int] = [data.count]
+            let st = CMSampleBufferCreateReady(
+                    kCFAllocatorDefault, blockBuffer!, stream.mixer.videoIO.formatDescription, 1, 0, nil, 1, &sampleSizes, &sampleBuffer)
+            guard st == noErr else {
+                AudioStreamPlayback.printOSStatus(st)
+                logger.warning("Can't create sample buffer :'(")
+                return
+            }
+            
+            guard let buffer:CMSampleBuffer = sampleBuffer else {
+                logger.warning("Sample Buffer is null")
+                return
+            }
 
-            guard CMSampleBufferCreate(
-                kCFAllocatorDefault, blockBuffer!, true, nil, nil, stream.mixer.videoIO.formatDescription, 1, 1, &timing, 1, &sampleSizes, &sampleBuffer) == noErr else {
-                    return
-            }
-            if stream.mixer.videoIO.vidLayer != nil {
-                stream.mixer.videoIO.vidLayer?.enqueue(sampleBuffer!)
-            } else {
-                logger.warning("vidlayer not set")
-            }
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(buffer, true)
+            let dictionary = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
+            let displayImmediatelyKey = Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque()
+            let trueValue = Unmanaged.passUnretained(kCFBooleanTrue).toOpaque()
+            CFDictionarySetValue(dictionary, displayImmediatelyKey, trueValue)
+
+
+            //CMSampleBufferSetOutputPresentationTimeStamp(buffer, CMTimeMake(Int64(timestamp), 1000))
+
+            //logger.info("Enqueueing this beatiful buffer: \(buffer)")
+            stream.mixer.videoIO.vidLayer?.enqueue(buffer)
             status = noErr
         }
     }
